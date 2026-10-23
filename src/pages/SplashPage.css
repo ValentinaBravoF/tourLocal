@@ -1,0 +1,87 @@
+.splash-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+.splash-page__image-container {
+  height: 50vh;
+  width: 100%;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+  overflow: hidden;
+}
+
+.splash-page__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.splash-page__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.splash-page__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.splash-page__logo-icon {
+  background-color: var(--color-primary);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.splash-page__brand {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.splash-page__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.splash-page__description {
+  font-size: 15px;
+  color: var(--color-muted);
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+
+.splash-page__actions {
+  width: 100%;
+  margin-top: auto;
+}
+
+.splash-page__login-text {
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.splash-page__login-text span {
+  color: var(--color-primary);
+  font-weight: 700;
+  cursor: pointer;
+}
