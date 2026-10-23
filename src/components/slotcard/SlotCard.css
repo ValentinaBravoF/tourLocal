@@ -1,0 +1,71 @@
+.slot-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 90px;
+  padding: 16px;
+  background-color: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: left;
+}
+
+.slot-card:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.slot-card__header {
+  margin-bottom: 8px;
+}
+
+.slot-card__time {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.slot-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.slot-card__period {
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.slot-card__status {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.slot-card--available .slot-card__status {
+  color: var(--color-muted); /* Texto gris */
+}
+
+.slot-card--selected {
+  background-color: var(--color-info-bg);
+  border-color: var(--color-primary);
+}
+
+.slot-card--selected .slot-card__status {
+  color: var(--color-primary); /* Texto verde */
+  font-weight: 700;
+}
+
+.slot-card--no-slots {
+  background-color: var(--color-background);
+}
+
+.slot-card--no-slots .slot-card__time,
+.slot-card--no-slots .slot-card__period,
+.slot-card--no-slots .slot-card__status {
+  color: var(--color-muted);
+  opacity: 0.6;
+}
