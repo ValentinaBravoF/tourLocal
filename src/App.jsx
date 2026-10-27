@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import BottomNavigation from "./components/BottomNavigation/BottomNavigation";
@@ -17,82 +16,51 @@ import ConfirmReservationPage from "./pages/ConfirmReservationPage";
 import ReservationSuccessPage from "./pages/ReservationSuccessPage";
 import HistoryPage from "./pages/HistoryPage";
 
+import GuideProfilePage from "./pages/GuideProfilePage";
+import PlaceDetailPage from "./pages/PlaceDetailPage";
+import UserProfilePage from "./pages/UserProfilePage";
+import EditProfilePage from "./pages/EditProfilePage";
+
 export default function App() {
   return (
     <Routes>
-      {/* Pantallas de bienvenida y autenticación */}
       <Route path="/" element={<SplashPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<SignUpPage />} />
 
-      <Route
-        path="/agendar/:id"
-        element={<ScheduleVisitPage />}
-      />
+      <Route path="/agendar/:id" element={<ScheduleVisitPage />} />
+      <Route path="/confirmar-reserva" element={<ConfirmReservationPage />} />
+      <Route path="/reserva-confirmada" element={<ReservationSuccessPage />} />
+      <Route path="/experiencias/:id" element={<ExperienceDetailPage />} />
+      <Route path="/experiencias/:id/calificar" element={<RateExperiencePage />} />
+      <Route path="/cancelacion-error" element={<CancellationErrorPage />} />
+      <Route path="/cancelacion-error/:id" element={<CancellationErrorPage />} />
 
-      <Route
-        path="/confirmar-reserva"
-        element={<ConfirmReservationPage />}
-      />
+      <Route path="/guias/:id" element={<GuideProfilePage />} />
+      <Route path="/lugares/:id" element={<PlaceDetailPage />} />
+      <Route path="/perfil" element={<UserProfilePage />} />
+      <Route path="/perfil/editar" element={<EditProfilePage />} />
 
-      <Route
-        path="/reserva-confirmada"
-        element={<ReservationSuccessPage />}
-      />
-
-      <Route
-        path="/experiencias/:id"
-        element={<ExperienceDetailPage />}
-      />
-
-      <Route
-        path="/experiencias/:id/calificar"
-        element={<RateExperiencePage />}
-      />
-
-      <Route
-        path="/cancelacion-error"
-        element={<CancellationErrorPage />}
-      />
-
-      <Route
-        path="/cancelacion-error/:id"
-        element={<CancellationErrorPage />}
-      />
-
-      {/* Pantallas principales de la aplicación */}
       <Route
         path="/app/*"
         element={
           <>
             <MainLayout title="TourLocal">
               <Routes>
-                <Route
-                  path="explorar"
-                  element={<ExplorePage />}
-                />
-
-                <Route
-                  path="cancelar-reserva/:id"
-                  element={<CancelBookingPage />}
-                />
-
-                <Route
-                  path="*"
-                  element={<Navigate to="explorar" replace />}
-                />
+                <Route path="explorar" element={<ExplorePage />} />
+                <Route path="historial" element={<HistoryPage />} />
+                <Route path="cancelar-reserva/:id" element={<CancelBookingPage />} />
+                <Route path="*" element={<Navigate to="explorar" replace />} />
               </Routes>
             </MainLayout>
-
             <BottomNavigation />
           </>
         }
       />
 
-      <Route
-        path="historial"
-        element={<HistoryPage />}
-      />
+      <Route path="/explorar" element={<ExplorePage />} />
+      <Route path="/historial" element={<HistoryPage />} />
+      <Route path="/cancelar-reserva/:id" element={<CancelBookingPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
