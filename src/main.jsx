@@ -9,7 +9,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       {" "}
-      {/* <-- 2. Asegúrate de que envuelva a <App /> */}
       <App />
     </BrowserRouter>
   </React.StrictMode>,
