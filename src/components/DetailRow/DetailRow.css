@@ -1,0 +1,21 @@
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border, #eae6e1);
+}
+
+.detail-row__label {
+  color: var(--color-muted, #706560);
+  font-size: 14px;
+}
+
+.detail-row__value {
+  color: var(--color-text, #242421);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: right;
+}

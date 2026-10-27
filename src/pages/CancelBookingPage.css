@@ -1,0 +1,143 @@
+.cancel-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+.cancel-page__content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cancel-page__alert-icon {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+
+.cancel-page__title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 24px;
+}
+
+.cancel-page__card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+/* Tarjeta Lugar */
+.cancel-page__place-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.cancel-page__place-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.cancel-page__place-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.cancel-page__place-info p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.cancel-page__badge {
+  font-size: 10px;
+  color: var(--color-primary);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.cancel-page__rating {
+  color: var(--color-primary) !important;
+  font-weight: 600;
+  font-size: 12px !important;
+  margin-top: 4px !important;
+}
+
+/* Títulos de sección */
+.cancel-page__section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+/* Tarjeta Detalles */
+.cancel-page__details-card {
+  border: 1px solid #f5d0d0; /* Borde sutil rojizo de la imagen */
+}
+
+.cancel-page__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.cancel-page__row:last-child {
+  margin-bottom: 0;
+}
+
+.cancel-page__row span:first-child {
+  color: var(--color-muted);
+}
+
+.cancel-page__row span:last-child {
+  color: var(--color-text);
+  font-weight: 500;
+  text-align: right;
+}
+
+/* Tarjeta Guía */
+.cancel-page__guide-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--color-border);
+}
+
+.cancel-page__guide-card h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+}
+
+.cancel-page__guide-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.cancel-page__link {
+  font-size: 12px;
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Acciones */
+.cancel-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
