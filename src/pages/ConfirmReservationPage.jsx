@@ -1,14 +1,43 @@
+
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import GuideCard from "../components/GuideCard/GuideCard";
 import Button from "../components/Button/Button";
 import ReservationDetailCard from "../components/ReservationDetailCard/ReservationDetailCard";
 import PriceSummary from "../components/PriceSummary/PriceSummary";
+
 import "./ConfirmReservationPage.css";
 
 export default function ConfirmReservationPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Datos recibidos desde Agendar visita
+  const datosRecibidos = location.state || {};
+
+  // Datos de ejemplo para el prototipo
+  const reserva = {
+    experienciaId: datosRecibidos.experienciaId ?? 1,
+    experiencia: "Letrero LA PAZ",
+    fecha: datosRecibidos.fecha || "28 de octubre de 2026",
+    horario: datosRecibidos.horario || "10:00 AM",
+    participantes: datosRecibidos.participantes ?? 2,
+    ubicacion: "Murillo, La Paz, Bolivia",
+    notas: "Presentarse 10 minutos antes.",
+    guia: "María Fernández",
+    guiaId: 1,
+    precioPorPersona: 80,
+    tarifaServicio: 10,
+    estado: "confirmada",
+  };
+
+  function confirmarReserva() {
+    navigate("/reserva-confirmada", {
+      state: { reserva },
+    });
+  }
 
   return (
     <div className="confirm-reservation-page">
@@ -19,56 +48,60 @@ export default function ConfirmReservationPage() {
       />
 
       <main className="confirm-reservation-page__content">
-        {/* Detalles de la reserva */}
         <section className="confirm-reservation-page__section">
           <h2 className="confirm-reservation-page__section-title">
             Detalles de la reserva
           </h2>
+
           <ReservationDetailCard
-            fecha="Miércoles, 18 Octubre, 2026"
-            horario="06:30 AM"
-            participantes="2 personas"
-            ubicacion="Arashima, Kyoto, Japan"
-            notas="-"
+            titulo=""
+            fecha={reserva.fecha}
+            horario={reserva.horario}
+            participantes={`${reserva.participantes} personas`}
+            ubicacion={reserva.ubicacion}
+            notas={reserva.notas}
+            estado="normal"
           />
         </section>
 
-        {/* Tu guía */}
         <section className="confirm-reservation-page__section">
-          <h2 className="confirm-reservation-page__section-title">Tu guía</h2>
+          <h2 className="confirm-reservation-page__section-title">
+            Tu guía
+          </h2>
+
           <GuideCard
-            foto="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=120&auto=format&fit=crop"
-            nombre="Hiroshi Tanaka"
-            descripcion="Tu guía en Kyoto"
+            nombre={reserva.guia}
+            descripcion="Guía local especializada en historia y cultura de La Paz."
             ubicacion="La Paz, Bolivia"
-            calificacion="4.9"
-            resenas="320"
-            onVerPerfil={() => navigate("/guias/1")}
+            calificacion={4.9}
+            resenas={120}
+            onVerPerfil={() => navigate(`/guias/${reserva.guiaId}`)}
           />
         </section>
 
-        {/* Resumen del precio */}
         <section className="confirm-reservation-page__section">
           <h2 className="confirm-reservation-page__section-title">
             Resumen del precio
           </h2>
+
           <PriceSummary
-            precioPorPersona="Bs. 80"
-            participantes={2}
-            tarifaServicio="Bs. 10"
-            total="Bs. 170"
+            titulo=""
+            precioPorPersona={reserva.precioPorPersona}
+            participantes={reserva.participantes}
+            tarifaServicio={reserva.tarifaServicio}
+            variante="resumen"
           />
         </section>
 
-        {/* Botones de acción */}
         <div className="confirm-reservation-page__actions">
-          <Button
-            variant="primary"
-            onClick={() => navigate("/reserva-confirmada")}
-          >
+          <Button variant="primary" onClick={confirmarReserva}>
             Confirmar Reserva
           </Button>
-          <Button variant="secondary" onClick={() => navigate(-1)}>
+
+          <Button
+            variant="secondary"
+            onClick={() => navigate(-1)}
+          >
             Modificar Reserva
           </Button>
         </div>

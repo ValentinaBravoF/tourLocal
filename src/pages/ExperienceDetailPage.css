@@ -1,0 +1,123 @@
+
+.experience-detail-page {
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: inherit;
+}
+
+.experience-detail-page__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.experience-detail-page__header h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.experience-detail-page__back {
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.experience-detail-page__content {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  box-sizing: border-box;
+}
+
+.experience-detail-page__intro {
+  margin-bottom: 26px;
+}
+
+.experience-detail-page__status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px;
+  background-color: var(--color-info-bg);
+  border-radius: var(--radius);
+}
+
+.experience-detail-page__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.experience-detail-page__status h2 {
+  margin: 0 0 5px;
+  color: var(--color-primary);
+  font-size: 17px;
+}
+
+.experience-detail-page__status p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.experience-detail-page__section {
+  margin-bottom: 26px;
+}
+
+.experience-detail-page__section-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.experience-detail-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.experience-detail-page__secondary {
+  width: 100%;
+  padding: 14px;
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: 50px;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.experience-detail-page__secondary:hover {
+  background-color: var(--color-info-bg);
+}
+
+@media (max-width: 360px) {
+  .experience-detail-page__content {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .experience-detail-page__header h1 {
+    font-size: 17px;
+  }
+}

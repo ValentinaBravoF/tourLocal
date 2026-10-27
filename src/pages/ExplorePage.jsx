@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar/SearchBar";
 import CategoryPill from "../components/CategoryPill/CategoryPill";
-import FeaturedCard from "../components/FeatureCard/FeaturedCard";
+import FeaturedCard from "../components/FeaturedCard/FeaturedCard";
 import NavBar from "../components/NavBar/NavBar";
 import "./ExplorePage.css";
 

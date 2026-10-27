@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
@@ -10,6 +11,12 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleLogin = () => {
+    // Inicio de sesión simulado para el prototipo frontend.
+    // Aquí se integrará la autenticación cuando esté disponible.
+    navigate("/app/explorar", { replace: true });
+  };
+
   return (
     <div className="auth-page">
       <HeaderBar
@@ -19,7 +26,10 @@ const LoginPage = () => {
       />
 
       <div className="auth-page__scroll-content">
-        <h1 className="auth-page__title">Bienvenido de vuelta!</h1>
+        <h1 className="auth-page__title">
+          ¡Bienvenido de vuelta!
+        </h1>
+
         <p className="auth-page__subtitle">
           Inicia sesión para continuar organizando tus futuros recorridos.
         </p>
@@ -32,6 +42,7 @@ const LoginPage = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+
           <FormField
             label="Contraseña"
             type="password"
@@ -39,30 +50,39 @@ const LoginPage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <span className="auth-page__forgot">¿Olvidaste tu contraseña?</span>
+
+          <span className="auth-page__forgot">
+            ¿Olvidaste tu contraseña?
+          </span>
         </div>
 
         <div className="auth-page__actions">
-          <Button variant="primary" onClick={() => navigate("/explorar")}>
+          <Button
+            variant="primary"
+            onClick={handleLogin}
+          >
             Iniciar Sesión
           </Button>
 
           <div className="auth-page__divider">
-            <span>O conécta con</span>
+            <span>O conecta con</span>
           </div>
 
           <div className="auth-page__social">
             <Button variant="secondary" className="btn-social">
               G Google
             </Button>
+
             <Button variant="secondary" className="btn-social">
                Facebook
             </Button>
           </div>
 
           <p className="auth-page__footer-text">
-            eres nuevo?{" "}
-            <span onClick={() => navigate("/registro")}>Crear cuenta</span>
+            ¿Eres nuevo?{" "}
+            <span onClick={() => navigate("/registro")}>
+              Crear cuenta
+            </span>
           </p>
         </div>
       </div>

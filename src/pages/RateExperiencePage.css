@@ -1,0 +1,180 @@
+
+.rate-page {
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.rate-page__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rate-page__header h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.rate-page__back {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.rate-page__content {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  box-sizing: border-box;
+}
+
+.rate-page__experience {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: 28px;
+}
+
+.rate-page__experience-icon {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-info-bg);
+  border-radius: 10px;
+  font-size: 26px;
+}
+
+.rate-page__experience h2 {
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+
+.rate-page__experience p {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 3px 0;
+}
+
+.rate-page__rating {
+  text-align: center;
+  padding: 12px 0 30px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rate-page__rating h2 {
+  font-size: 19px;
+  margin: 0 0 8px;
+}
+
+.rate-page__rating p {
+  color: var(--color-muted);
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.rate-page__rating .rating-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rate-page__rating-text {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.rate-page__comment {
+  margin-top: 28px;
+}
+
+.rate-page__comment label {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rate-page__comment p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  margin: 8px 0 16px;
+}
+
+.rate-page__comment textarea {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.rate-page__comment textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.rate-page__counter {
+  display: block;
+  margin-top: 8px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.rate-page__footer {
+  margin-top: 32px;
+}
+
+.rate-page__success {
+  padding: 50px 12px;
+  text-align: center;
+}
+
+.rate-page__success-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  background-color: var(--color-info-bg);
+  color: var(--color-primary);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.rate-page__success h2 {
+  font-size: 21px;
+  margin-bottom: 12px;
+}
+
+.rate-page__success p {
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}

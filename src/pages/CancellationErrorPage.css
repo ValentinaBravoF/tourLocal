@@ -1,0 +1,160 @@
+
+.cancellation-error-page {
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: inherit;
+}
+
+.cancellation-error-page__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cancellation-error-page__header h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.cancellation-error-page__back {
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.cancellation-error-page__content {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 25px 20px 40px;
+  box-sizing: border-box;
+}
+
+.cancellation-error-page__message {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.cancellation-error-page__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  margin: 10px auto 22px;
+  border-radius: 50%;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  font-size: 42px;
+  font-weight: 700;
+}
+
+.cancellation-error-page__message h2 {
+  margin: 0 0 12px;
+  font-size: 21px;
+  line-height: 1.3;
+}
+
+.cancellation-error-page__message > p {
+  margin: 0 auto;
+  max-width: 330px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+.cancellation-error-page__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 14px;
+  text-align: left;
+  border-radius: var(--radius);
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.cancellation-error-page__notice span {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cancellation-error-page__notice p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cancellation-error-page__experience {
+  margin-bottom: 24px;
+}
+
+.cancellation-error-page__experience h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.cancellation-error-page__experience-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  border-radius: var(--radius);
+}
+
+.cancellation-error-page__thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  border-radius: 10px;
+  background-color: var(--color-info-bg);
+  font-size: 27px;
+}
+
+.cancellation-error-page__experience-card h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.cancellation-error-page__experience-card p {
+  margin: 3px 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.cancellation-error-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.cancellation-error-page__secondary {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--color-primary);
+  border-radius: 50px;
+  background-color: transparent;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancellation-error-page__secondary:hover {
+  background-color: var(--color-info-bg);
+}

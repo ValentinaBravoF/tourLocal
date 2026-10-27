@@ -53,13 +53,26 @@ export default function ScheduleVisitPage() {
     setHorarioSeleccionado(null);
   }
 
+  
   function confirmarHorario() {
     if (!horarioSeleccionado) return;
 
-    const fecha = fechaSeleccionada.toLocaleDateString("es-BO");
+    const fecha = fechaSeleccionada.toLocaleDateString("es-BO", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
-    alert(`Horario seleccionado: ${fecha}, ${horarioSeleccionado}`);
+    navigate("/confirmar-reserva", {
+      state: {
+        experienciaId: 1,
+        fecha: fecha,
+        horario: horarioSeleccionado,
+        participantes: 2,
+      },
+    });
   }
+
 
   return (
     <div className="schedule-page">

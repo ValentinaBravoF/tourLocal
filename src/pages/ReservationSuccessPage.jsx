@@ -1,5 +1,6 @@
+
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import GuideCard from "../components/GuideCard/GuideCard";
 import Button from "../components/Button/Button";
@@ -9,13 +10,17 @@ import "./ReservationSuccessPage.css";
 
 export default function ReservationSuccessPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Datos enviados desde ConfirmReservationPage
+  const reserva = location.state?.reserva || {};
 
   return (
     <div className="reservation-success-page">
       <HeaderBar
         title="Confirmar Reserva"
         showBackButton={true}
-        onBackClick={() => navigate("/explorar")}
+        onBackClick={() => navigate("/app/explorar")}
       />
 
       <main className="reservation-success-page__content">
@@ -48,9 +53,9 @@ export default function ReservationSuccessPage() {
         <section className="reservation-success-page__experience">
           <ExperienceSummary
             imagen="https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop"
-            nombre='Letrero "LA PAZ"'
-            ubicacion="Murillo, La Paz, Bolivia"
-            tag="PARQUE MIRADOR"
+            destino={reserva.experiencia || 'Letrero "LA PAZ"'}
+            ubicacion={reserva.ubicacion || "Murillo, La Paz, Bolivia"}
+            categoria="PARQUE MIRADOR"
             calificacion="4.9"
             resenas="2,481"
           />
@@ -62,11 +67,13 @@ export default function ReservationSuccessPage() {
             Detalles de la reserva
           </h2>
           <ReservationDetailCard
-            fecha="Miércoles, 18 Octubre, 2026"
-            horario="06:30 AM"
-            participantes="2 people"
-            ubicacion="Arashima, Kyoto, Japan"
-            notas="-"
+            titulo=""
+            fecha={reserva.fecha || "28 de octubre de 2026"}
+            horario={reserva.horario || "10:00 AM"}
+            participantes={`${reserva.participantes ?? 2} personas`}
+            ubicacion={reserva.ubicacion || "Murillo, La Paz, Bolivia"}
+            notas={reserva.notas || "-"}
+            estado="confirmada"
           />
         </section>
 
@@ -89,19 +96,29 @@ export default function ReservationSuccessPage() {
         <div className="reservation-success-page__actions">
           <Button
             variant="primary"
-            onClick={() => navigate("/experiencias/1")}
+            onClick={() =>
+              navigate("/app/historial", {
+                state: { reserva },
+              })
+            }
           >
             Ver mi reserva
           </Button>
+
           <Button
             variant="danger"
-            onClick={() => navigate("/cancelar-reserva/1")}
+            onClick={() =>
+              navigate(`/app/cancelar-reserva/${reserva.experienciaId ?? 1}`, {
+                state: { reserva },
+              })
+            }
           >
             Cancelar reserva
           </Button>
+
           <Button
             variant="secondary"
-            onClick={() => navigate("/explorar")}
+            onClick={() => navigate("/app/explorar")}
           >
             Volver al inicio
           </Button>
