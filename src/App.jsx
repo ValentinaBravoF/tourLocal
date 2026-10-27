@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import CancelBookingPage from "./pages/CancelBookingPage";
 // import ExplorePage from "./pages/ExplorePage"; // Ejemplo para después
+import ScheduleVisitPage from "./pages/ScheduleVisitPage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
       <Route path="/" element={<SplashPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<SignUpPage />} />
+      <Route path="/agendar/:id" element={<ScheduleVisitPage />} />
 
       {/* --- RUTAS CON LAYOUT Y BOTTOM NAVIGATION --- */}
       {/* Envolvemos estas rutas en un componente que renderiza el Layout y la Barra */}

@@ -1,0 +1,160 @@
+
+.schedule-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background);
+  font-family: inherit;
+}
+
+.schedule-page__content {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 16px 20px 24px;
+  box-sizing: border-box;
+  flex: 1;
+}
+
+.schedule-page__place {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.schedule-page__thumbnail {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #123d70, #296db8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.schedule-page__place h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.schedule-page__place p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.schedule-page__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.schedule-page__section-header h3,
+.schedule-page__schedule h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.schedule-page__section-header h3 {
+  text-transform: capitalize;
+}
+
+.schedule-page__arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.schedule-page__arrows button {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.schedule-page__days {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 26px;
+}
+
+.schedule-page__day {
+  min-width: 0;
+  height: 65px;
+  padding: 6px 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.schedule-page__day span {
+  color: var(--color-muted);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.schedule-page__day strong {
+  font-size: 16px;
+}
+
+.schedule-page__day--selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.schedule-page__day--selected span {
+  color: white;
+}
+
+.schedule-page__schedule h3 {
+  margin-bottom: 14px;
+}
+
+.schedule-page__slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Ajustamos el componente de Vale para esta pantalla */
+.schedule-page__slots .slot-card {
+  min-width: 0;
+  min-height: 76px;
+  padding: 10px;
+}
+
+.schedule-page__slots .slot-card__time {
+  font-size: 15px;
+}
+
+.schedule-page__slots .slot-card__period,
+.schedule-page__slots .slot-card__status {
+  font-size: 10px;
+}
+
+.schedule-page__footer {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 16px 20px 24px;
+  box-sizing: border-box;
+}
