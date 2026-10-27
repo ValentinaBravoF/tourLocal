@@ -1,0 +1,116 @@
+
+.experience-card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  max-width: 343px;
+  min-height: 120px;
+  padding: 12px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: inherit;
+}
+
+.experience-card__image {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.experience-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.experience-card__name {
+  margin: 0 0 4px;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.experience-card__guide,
+.experience-card__location,
+.experience-card__rating,
+.experience-card__date {
+  margin: 3px 0;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.experience-card__star {
+  color: var(--color-star);
+  margin-right: 3px;
+}
+
+.experience-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.experience-card__button {
+  padding: 4px 12px;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  border: none;
+  border-radius: 18px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.experience-card__button--secondary {
+  background-color: #fff7db;
+  color: #806000;
+}
+
+.experience-card__button:hover {
+  opacity: 0.85;
+}
+
+.experience-card__button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Variante compacta para el historial de experiencias */
+.experience-card--compact {
+  min-height: auto;
+  padding: 8px;
+}
+
+.experience-card--compact .experience-card__image {
+  width: 64px;
+  height: 64px;
+}
+
+.experience-card--compact .experience-card__name {
+  font-size: 13px;
+}
+
+@media (max-width: 360px) {
+  .experience-card {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .experience-card__image {
+    width: 76px;
+    height: 76px;
+  }
+
+  .experience-card--compact .experience-card__image {
+    width: 64px;
+    height: 64px;
+  }
+}

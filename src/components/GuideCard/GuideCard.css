@@ -1,0 +1,71 @@
+
+.guide-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 343px;
+  padding: 12px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #eae6e1);
+  border-radius: var(--radius, 12px);
+  font-family: "Inter", sans-serif;
+}
+
+.guide-card__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guide-card__photo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.guide-card__details {
+  min-width: 0;
+}
+
+.guide-card__name {
+  margin: 0 0 4px;
+  color: var(--color-text, #242421);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.guide-card__location,
+.guide-card__rating {
+  margin: 3px 0;
+  font-size: 12px;
+  color: var(--color-muted, #706560);
+}
+
+.guide-card__star {
+  color: var(--color-star, #f59e0b);
+  margin-right: 4px;
+}
+
+.guide-card__description {
+  margin: 12px 0 0;
+  color: var(--color-muted, #706560);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.guide-card__link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary, #0f766e);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.guide-card__link:hover {
+  text-decoration: underline;
+}
