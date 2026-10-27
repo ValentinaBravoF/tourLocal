@@ -1,0 +1,42 @@
+.reservation-detail-wrapper {
+  width: 100%;
+}
+
+.reservation-detail-wrapper__title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.reservation-detail-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background-color: var(--color-info-bg);
+  border: 1.5px solid var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reservation-detail-card--normal {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.reservation-detail-card--confirmada {
+  background-color: var(--color-info-bg);
+  border: 1.5px solid var(--color-primary);
+}
+
+.reservation-detail-card--cancelacion {
+  background-color: var(--color-danger-bg);
+  border: 1.5px solid var(--color-danger);
+}
+
+/* Quitamos la línea divisoria inferior en la última fila dentro de la tarjeta */
+.reservation-detail-card .detail-row:last-child {
+  border-bottom: none;
+}

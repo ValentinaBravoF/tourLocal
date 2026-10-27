@@ -1,0 +1,56 @@
+.price-summary-wrapper {
+  width: 100%;
+}
+
+.price-summary-wrapper__title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.price-summary {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.price-summary__label {
+  color: var(--color-muted);
+}
+
+.price-summary__value {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.price-summary__row--total {
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.price-summary__total-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.price-summary__total-value {
+  font-size: 18px; /* 18px Bold según fila 145-146 de su M2 */
+  font-weight: 700;
+  color: var(--color-primary);
+}

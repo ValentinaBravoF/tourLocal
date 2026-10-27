@@ -1,0 +1,38 @@
+.history-page {
+  min-height: 100vh;
+  background-color: var(--color-background, #faf8f5);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.history-page__content {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 16px 20px 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  gap: 24px;
+}
+
+.history-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.history-page__list .experience-card {
+  max-width: 100%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.history-page__action {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 16px;
+}

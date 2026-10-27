@@ -1,0 +1,38 @@
+.confirm-reservation-page {
+  min-height: 100vh;
+  background-color: var(--color-background, #faf8f5);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.confirm-reservation-page__content {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 16px 20px 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.confirm-reservation-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirm-reservation-page__section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text, #242421);
+  margin: 0;
+}
+
+.confirm-reservation-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
