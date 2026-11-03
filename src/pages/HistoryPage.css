@@ -14,21 +14,154 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   flex: 1;
-  gap: 24px;
+  gap: 20px;
 }
 
+/* Tabs switcher */
+.history-page__tabs {
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 4px;
+  gap: 4px;
+}
+
+.history-page__tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: center;
+}
+
+.history-page__tab--active {
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+}
+
+/* Upcoming list */
+.history-page__upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.upcoming-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.upcoming-card__header {
+  display: flex;
+  gap: 12px;
+}
+
+.upcoming-card__image {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.upcoming-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.upcoming-card__badge-row {
+  margin-bottom: 2px;
+}
+
+.upcoming-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.upcoming-card__guide {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.upcoming-card__date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.upcoming-card__location {
+  font-size: 11px;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.upcoming-card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.upcoming-card__actions .btn {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+/* Past experiences list */
 .history-page__list {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  align-items: center;
 }
 
 .history-page__list .experience-card {
   max-width: 100%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.history-page__empty {
+  text-align: center;
+  padding: 40px 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  border: 1px dashed var(--color-border);
+}
+
+.history-page__empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 6px 0;
+}
+
+.history-page__empty-desc {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0;
 }
 
 .history-page__action {

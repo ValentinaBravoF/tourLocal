@@ -29,6 +29,12 @@ import ExperienceDetailPage from "./pages/ExperienceDetailPage";
 import RateExperiencePage from "./pages/RateExperiencePage";
 import CancellationErrorPage from "./pages/CancellationErrorPage";
 
+// Nuevas páginas añadidas
+import AllPlacesPage from "./pages/AllPlacesPage";
+import PaymentMethodPage from "./pages/PaymentMethodPage";
+import CancellationSuccessPage from "./pages/CancellationSuccessPage";
+import NotificationsPage from "./pages/NotificationsPage";
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,6 +66,7 @@ export default function App() {
                 <Route path="historial" element={<HistoryPage />} />
                 <Route path="perfil" element={<UserProfilePage />} />
                 <Route path="perfil/editar" element={<EditProfilePage />} />
+                <Route path="lugares" element={<AllPlacesPage />} />
                 <Route path="lugares/:id" element={<PlaceDetailPage />} />
                 <Route path="guias/:id" element={<GuideProfilePage />} />
                 <Route path="agendar/:id" element={<ScheduleVisitPage />} />
@@ -67,6 +74,7 @@ export default function App() {
                   path="confirmar-reserva"
                   element={<ConfirmReservationPage />}
                 />
+                <Route path="pago" element={<PaymentMethodPage />} />
                 <Route
                   path="reserva-confirmada"
                   element={<ReservationSuccessPage />}
@@ -74,6 +82,10 @@ export default function App() {
                 <Route
                   path="cancelar-reserva/:id"
                   element={<CancelBookingPage />}
+                />
+                <Route
+                  path="cancelacion-exitosa"
+                  element={<CancellationSuccessPage />}
                 />
                 <Route
                   path="cancelacion-error"
@@ -87,11 +99,13 @@ export default function App() {
                   path="experiencias/:id/calificar"
                   element={<RateExperiencePage />}
                 />
+                <Route path="notificaciones" element={<NotificationsPage />} />
               </Routes>
             </MainLayout>
 
             <NavBar
               activeTab={getActiveTab()}
+              badges={{ history: 1 }}
               onTabChange={(tab) => {
                 if (tab === "explore") navigate("/app/explorar");
                 if (tab === "saved") navigate("/app/guardados");

@@ -11,12 +11,26 @@ export default function ReservationSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const reserva = location.state?.reserva || {};
+  const reserva = location.state?.reserva || {
+    experienciaId: 1,
+    experiencia: 'Letrero "LA PAZ"',
+    fecha: "28 de octubre de 2026",
+    horario: "10:00 AM",
+    participantes: 2,
+    ubicacion: "Murillo, La Paz, Bolivia",
+    notas: "Presentarse 10 minutos antes del recorrido.",
+    guia: "María Fernández",
+    guiaId: 1,
+    metodoPago: "QR Simple",
+    totalPagado: 170,
+    idReserva: "TL-582914",
+    estado: "confirmada",
+  };
 
   return (
     <div className="reservation-success-page">
       <HeaderBar
-        title="Confirmar Reserva"
+        title="Reserva Confirmada"
         showBackButton={true}
         onBackClick={() => navigate("/app/explorar")}
       />
@@ -43,8 +57,13 @@ export default function ReservationSuccessPage() {
             ¡Reserva Confirmada!
           </h1>
           <p className="reservation-success-page__subtitle">
-            Tu experiencia ha sido reservada correctamente.
+            Tu experiencia ha sido reservada correctamente. Te esperamos con entusiasmo.
           </p>
+          {reserva.idReserva && (
+            <span className="reservation-success-page__code">
+              Código de reserva: <strong>{reserva.idReserva}</strong>
+            </span>
+          )}
         </section>
 
         {/* Resumen de Experiencia */}
@@ -75,18 +94,34 @@ export default function ReservationSuccessPage() {
           />
         </section>
 
+        {/* Pago y Guía */}
+        {reserva.metodoPago && (
+          <section className="reservation-success-page__payment-info">
+            <div className="reservation-success-page__payment-row">
+              <span>Método de pago:</span>
+              <strong>{reserva.metodoPago}</strong>
+            </div>
+            {reserva.totalPagado && (
+              <div className="reservation-success-page__payment-row">
+                <span>Monto total:</span>
+                <strong>Bs. {reserva.totalPagado}.00</strong>
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Ver mi reserva / Tu guía */}
         <section className="reservation-success-page__section">
           <h2 className="reservation-success-page__section-title">
-            Ver mi reserva
+            Tu guía asignado
           </h2>
           <GuideCard
-            foto="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=120&auto=format&fit=crop"
-            nombre="Diego Ramos"
-            descripcion="Tu guía en La Paz"
+            foto="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
+            nombre={reserva.guia || "María Fernández"}
+            descripcion="Guía local especializada en historia, tradiciones y cultura paceña."
             calificacion="4.9"
-            resenas="320"
-            onVerPerfil={() => navigate("/app/guias/2")}
+            resenas="120"
+            onVerPerfil={() => navigate(`/app/guias/${reserva.guiaId || 1}`)}
           />
         </section>
 
@@ -96,11 +131,11 @@ export default function ReservationSuccessPage() {
             variant="primary"
             onClick={() =>
               navigate("/app/historial", {
-                state: { reserva },
+                state: { tab: "upcoming", reserva },
               })
             }
           >
-            Ver mi reserva
+            Ver en mis reservas
           </Button>
 
           <Button

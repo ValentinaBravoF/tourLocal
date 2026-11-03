@@ -1,0 +1,117 @@
+.cancellation-success-page {
+  background-color: var(--color-background);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cancellation-success-page__content {
+  padding: 24px 16px;
+  max-width: 430px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.cancellation-success-page__banner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancellation-success-page__icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color-info-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.cancellation-success-page__icon {
+  width: 38px;
+  height: 38px;
+}
+
+.cancellation-success-page__title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.cancellation-success-page__subtitle {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+.cancellation-success-page__card {
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.cancellation-success-page__card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 4px 0;
+}
+
+.cancellation-success-page__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+.cancellation-success-page__row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.cancellation-success-page__label {
+  color: var(--color-muted);
+}
+
+.cancellation-success-page__value {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.cancellation-success-page__refund-badge {
+  background: var(--color-info-bg);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.cancellation-success-page__actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}

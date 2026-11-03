@@ -1,0 +1,116 @@
+.all-places-page {
+  background-color: var(--color-background);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.all-places-page__content {
+  padding: 16px;
+  max-width: 430px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.all-places-page__search {
+  width: 100%;
+}
+
+.all-places-page__categories {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.all-places-page__categories::-webkit-scrollbar {
+  display: none;
+}
+
+.all-places-page__meta-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.all-places-page__count {
+  font-size: 13px;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+.all-places-page__sort {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.all-places-page__sort:focus {
+  border-color: var(--color-primary);
+}
+
+.all-places-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.all-places-page__grid .featured-card {
+  width: 100%;
+}
+
+.all-places-page__empty {
+  text-align: center;
+  padding: 40px 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  border: 1px dashed var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.all-places-page__empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.all-places-page__empty-desc {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0;
+  max-width: 260px;
+}
+
+.all-places-page__reset-btn {
+  margin-top: 8px;
+  background: var(--color-info-bg);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.all-places-page__reset-btn:hover {
+  opacity: 0.85;
+}

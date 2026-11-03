@@ -17,22 +17,35 @@ export default function ConfirmReservationPage() {
 
   const reserva = {
     experienciaId: datosRecibidos.experienciaId ?? 1,
-    experiencia: "Letrero LA PAZ",
+    experiencia: datosRecibidos.experiencia || 'Letrero "LA PAZ"',
     fecha: datosRecibidos.fecha || "28 de octubre de 2026",
     horario: datosRecibidos.horario || "10:00 AM",
     participantes: datosRecibidos.participantes ?? 2,
-    ubicacion: "Murillo, La Paz, Bolivia",
-    notas: "Presentarse 10 minutos antes.",
-    guia: "María Fernández",
-    guiaId: 1,
-    precioPorPersona: 80,
-    tarifaServicio: 10,
+    ubicacion: datosRecibidos.ubicacion || "Murillo, La Paz, Bolivia",
+    notas: datosRecibidos.notas || "Presentarse 10 minutos antes.",
+    guia: datosRecibidos.guia || "María Fernández",
+    guiaId: datosRecibidos.guiaId ?? 1,
+    precioPorPersona: datosRecibidos.precioPorPersona ?? 80,
+    tarifaServicio: datosRecibidos.tarifaServicio ?? 10,
     estado: "confirmada",
   };
 
-  function confirmarReserva() {
-    navigate("/app/reserva-confirmada", {
+  function irAlPago() {
+    navigate("/app/pago", {
       state: { reserva },
+    });
+  }
+
+  function confirmarEnEfectivo() {
+    navigate("/app/reserva-confirmada", {
+      state: {
+        reserva: {
+          ...reserva,
+          metodoPago: "Efectivo al guía",
+          totalPagado: reserva.precioPorPersona * reserva.participantes + reserva.tarifaServicio,
+          idReserva: `TL-${Math.floor(100000 + Math.random() * 900000)}`,
+        },
+      },
     });
   }
 
@@ -88,14 +101,29 @@ export default function ConfirmReservationPage() {
           />
         </section>
 
+        <div className="confirm-reservation-page__policy">
+          <span className="confirm-reservation-page__policy-icon">🛡️</span>
+          <p className="confirm-reservation-page__policy-text">
+            <strong>Cancelación flexible:</strong> Puedes cancelar sin costo hasta 24 horas antes del tour desde tu historial.
+          </p>
+        </div>
+
         <div className="confirm-reservation-page__actions">
-          <Button variant="primary" onClick={confirmarReserva}>
-            Confirmar Reserva
+          <Button variant="primary" onClick={irAlPago}>
+            Seleccionar Método de Pago
           </Button>
 
-          <Button variant="secondary" onClick={() => navigate(-1)}>
-            Modificar Reserva
+          <Button variant="secondary" onClick={confirmarEnEfectivo}>
+            Confirmar y Pagar en Efectivo
           </Button>
+
+          <button
+            type="button"
+            className="confirm-reservation-page__modify-btn"
+            onClick={() => navigate(-1)}
+          >
+            Modificar fecha u horario
+          </button>
         </div>
       </main>
     </div>

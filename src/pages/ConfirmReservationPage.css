@@ -30,9 +30,47 @@
   margin: 0;
 }
 
+.confirm-reservation-page__policy {
+  background: var(--color-info-bg);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.confirm-reservation-page__policy-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.confirm-reservation-page__policy-text {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
 .confirm-reservation-page__actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 4px;
+}
+
+.confirm-reservation-page__modify-btn {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: 13px;
+  padding: 8px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-align: center;
+  font-family: inherit;
+}
+
+.confirm-reservation-page__modify-btn:hover {
+  color: var(--color-text);
 }

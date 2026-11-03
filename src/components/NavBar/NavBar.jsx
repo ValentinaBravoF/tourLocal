@@ -1,7 +1,7 @@
 import React from 'react';
 import './NavBar.css';
 
-const NavBar = ({ activeTab = 'explore', onTabChange }) => {
+const NavBar = ({ activeTab = 'explore', onTabChange, badges = {} }) => {
   const navItems = [
     {
       id: 'explore',
@@ -16,6 +16,7 @@ const NavBar = ({ activeTab = 'explore', onTabChange }) => {
     {
       id: 'saved',
       label: 'Guardados',
+      badge: badges.saved,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
@@ -25,6 +26,7 @@ const NavBar = ({ activeTab = 'explore', onTabChange }) => {
     {
       id: 'history',
       label: 'Historial',
+      badge: badges.history,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -37,6 +39,7 @@ const NavBar = ({ activeTab = 'explore', onTabChange }) => {
     {
       id: 'profile',
       label: 'Perfil',
+      badge: badges.profile,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -57,7 +60,14 @@ const NavBar = ({ activeTab = 'explore', onTabChange }) => {
             onClick={() => onTabChange && onTabChange(item.id)}
             type="button"
           >
-            <div className="nav-bar__icon">{item.icon}</div>
+            <div className="nav-bar__icon-container">
+              <div className="nav-bar__icon">{item.icon}</div>
+              {item.badge && (
+                <span className="nav-bar__badge">
+                  {typeof item.badge === 'number' ? item.badge : ''}
+                </span>
+              )}
+            </div>
             <span className="nav-bar__label">{item.label}</span>
           </button>
         );

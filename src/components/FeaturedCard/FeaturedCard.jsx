@@ -8,12 +8,40 @@ const FeaturedCard = ({
   tag = "Pase Libre",
   duration = "A 40 minutos",
   price,
-  onClick
+  onClick,
+  isSaved = false,
+  onSave,
 }) => {
   return (
-    <div className="featured-card" onClick={onClick}>
+    <div
+      className="featured-card"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && onClick) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
       <div className="featured-card__image-container">
-        <img src={image} alt={title} className="featured-card__image" />
+        <img src={image} alt={title} className="featured-card__image" loading="lazy" />
+        {onSave && (
+          <button
+            type="button"
+            className={`featured-card__save-btn ${isSaved ? 'featured-card__save-btn--active' : ''}`}
+            aria-label={isSaved ? "Quitar de guardados" : "Guardar lugar"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSave();
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
+        )}
       </div>
       <div className="featured-card__content">
         <h3 className="featured-card__title">{title}</h3>
