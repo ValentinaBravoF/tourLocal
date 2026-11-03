@@ -1,68 +1,108 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
-import BottomNavigation from "./components/BottomNavigation/BottomNavigation";
+import NavBar from "./components/NavBar/NavBar";
 
+// Páginas públicas
 import SplashPage from "./pages/SplashPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+
+// Páginas de la app
 import ExplorePage from "./pages/ExplorePage";
-import CancelBookingPage from "./pages/CancelBookingPage";
-
-import ScheduleVisitPage from "./pages/ScheduleVisitPage";
-import RateExperiencePage from "./pages/RateExperiencePage";
-import CancellationErrorPage from "./pages/CancellationErrorPage";
-import ExperienceDetailPage from "./pages/ExperienceDetailPage";
-import ConfirmReservationPage from "./pages/ConfirmReservationPage";
-import ReservationSuccessPage from "./pages/ReservationSuccessPage";
+import SavedPlacesPage from "./pages/SavedPlacesPage";
 import HistoryPage from "./pages/HistoryPage";
-
-import GuideProfilePage from "./pages/GuideProfilePage";
-import PlaceDetailPage from "./pages/PlaceDetailPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import EditProfilePage from "./pages/EditProfilePage";
+import PlaceDetailPage from "./pages/PlaceDetailPage";
+import GuideProfilePage from "./pages/GuideProfilePage";
+import ScheduleVisitPage from "./pages/ScheduleVisitPage";
+import ConfirmReservationPage from "./pages/ConfirmReservationPage";
+import ReservationSuccessPage from "./pages/ReservationSuccessPage";
+import CancelBookingPage from "./pages/CancelBookingPage";
+import ExperienceDetailPage from "./pages/ExperienceDetailPage";
+import RateExperiencePage from "./pages/RateExperiencePage";
+import CancellationErrorPage from "./pages/CancellationErrorPage";
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getActiveTab = () => {
+    if (location.pathname.includes("guardados")) return "saved";
+    if (location.pathname.includes("historial")) return "history";
+    if (location.pathname.includes("perfil")) return "profile";
+    return "explore";
+  };
+
   return (
     <Routes>
       <Route path="/" element={<SplashPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<SignUpPage />} />
-
-      <Route path="/agendar/:id" element={<ScheduleVisitPage />} />
-      <Route path="/confirmar-reserva" element={<ConfirmReservationPage />} />
-      <Route path="/reserva-confirmada" element={<ReservationSuccessPage />} />
-      <Route path="/experiencias/:id" element={<ExperienceDetailPage />} />
-      <Route path="/experiencias/:id/calificar" element={<RateExperiencePage />} />
-      <Route path="/cancelacion-error" element={<CancellationErrorPage />} />
-      <Route path="/cancelacion-error/:id" element={<CancellationErrorPage />} />
-
-      <Route path="/guias/:id" element={<GuideProfilePage />} />
-      <Route path="/lugares/:id" element={<PlaceDetailPage />} />
-      <Route path="/perfil" element={<UserProfilePage />} />
-      <Route path="/perfil/editar" element={<EditProfilePage />} />
-
       <Route
         path="/app/*"
         element={
           <>
             <MainLayout title="TourLocal">
               <Routes>
+                <Route
+                  path="*"
+                  element={<Navigate to="/app/explorar" replace />}
+                />
                 <Route path="explorar" element={<ExplorePage />} />
+                <Route path="guardados" element={<SavedPlacesPage />} />
                 <Route path="historial" element={<HistoryPage />} />
-                <Route path="cancelar-reserva/:id" element={<CancelBookingPage />} />
-                <Route path="*" element={<Navigate to="explorar" replace />} />
+                <Route path="perfil" element={<UserProfilePage />} />
+                <Route path="perfil/editar" element={<EditProfilePage />} />
+                <Route path="lugares/:id" element={<PlaceDetailPage />} />
+                <Route path="guias/:id" element={<GuideProfilePage />} />
+                <Route path="agendar/:id" element={<ScheduleVisitPage />} />
+                <Route
+                  path="confirmar-reserva"
+                  element={<ConfirmReservationPage />}
+                />
+                <Route
+                  path="reserva-confirmada"
+                  element={<ReservationSuccessPage />}
+                />
+                <Route
+                  path="cancelar-reserva/:id"
+                  element={<CancelBookingPage />}
+                />
+                <Route
+                  path="cancelacion-error"
+                  element={<CancellationErrorPage />}
+                />
+                <Route
+                  path="experiencias/:id"
+                  element={<ExperienceDetailPage />}
+                />
+                <Route
+                  path="experiencias/:id/calificar"
+                  element={<RateExperiencePage />}
+                />
               </Routes>
             </MainLayout>
-            <BottomNavigation />
+
+            <NavBar
+              activeTab={getActiveTab()}
+              onTabChange={(tab) => {
+                if (tab === "explore") navigate("/app/explorar");
+                if (tab === "saved") navigate("/app/guardados");
+                if (tab === "history") navigate("/app/historial");
+                if (tab === "profile") navigate("/app/perfil");
+              }}
+            />
           </>
         }
       />
-
-      <Route path="/explorar" element={<ExplorePage />} />
-      <Route path="/historial" element={<HistoryPage />} />
-      <Route path="/cancelar-reserva/:id" element={<CancelBookingPage />} />
-
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<h2>404 - Página no encontrada</h2>} />
     </Routes>
   );
 }

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar/SearchBar";
 import CategoryPill from "../components/CategoryPill/CategoryPill";
 import FeaturedCard from "../components/FeaturedCard/FeaturedCard";
-import NavBar from "../components/NavBar/NavBar";
 import "./ExplorePage.css";
 
 const categories = [
@@ -73,13 +72,12 @@ export default function ExplorePage() {
   const filteredFeatured = featuredDestinations.filter(
     (item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase())
+      item.location.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
     <div className="explore-page">
       <main className="explore-page__content">
-        {/* Cabecera de Usuario */}
         <header className="explore-page__header">
           <div className="explore-page__welcome">
             <span className="explore-page__greeting">Bienvenida de nuevo,</span>
@@ -88,7 +86,7 @@ export default function ExplorePage() {
           <button
             type="button"
             className="explore-page__avatar-btn"
-            onClick={() => navigate("/perfil")}
+            onClick={() => navigate("/app/perfil")}
             aria-label="Ir al perfil"
           >
             <img
@@ -109,7 +107,6 @@ export default function ExplorePage() {
           />
         </section>
 
-        {/* Carrusel de Categorías */}
         <nav
           className="explore-page__categories"
           aria-label="Categorías de lugares"
@@ -147,16 +144,17 @@ export default function ExplorePage() {
                 tag={place.tag}
                 duration={place.duration}
                 price={place.price}
-                onClick={() => navigate(`/agendar/${place.id}`)}
+                onClick={() => navigate(`/app/agendar/${place.id}`)}
               />
             ))}
           </div>
         </section>
 
-        {/* Sección Atracciones Cercanas */}
         <section className="explore-page__section">
           <div className="explore-page__section-header">
-            <h2 className="explore-page__section-title">Atracciones Cercanas</h2>
+            <h2 className="explore-page__section-title">
+              Atracciones Cercanas
+            </h2>
           </div>
 
           <div className="explore-page__nearby-list">
@@ -164,12 +162,12 @@ export default function ExplorePage() {
               <article
                 key={place.id}
                 className="nearby-card"
-                onClick={() => navigate(`/agendar/${place.id}`)}
+                onClick={() => navigate(`/app/agendar/${place.id}`)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    navigate(`/agendar/${place.id}`);
+                    navigate(`/app/agendar/${place.id}`);
                   }
                 }}
               >
@@ -205,14 +203,6 @@ export default function ExplorePage() {
         </section>
       </main>
 
-      {/* Barra de Navegación Inferior */}
-      <NavBar
-        activeTab="explore"
-        onTabChange={(tab) => {
-          if (tab === "history") navigate("/historial");
-          else if (tab === "profile") navigate("/perfil");
-        }}
-      />
     </div>
   );
 }

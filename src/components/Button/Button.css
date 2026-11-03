@@ -41,3 +41,11 @@
   color: var(--color-primary);
   border-color: var(--color-primary);
 }
+.btn {
+  letter-spacing: 0.3px;
+}
+.btn--primary:hover,
+.btn--danger:hover,
+.btn--secondary:hover {
+  opacity: 0.9;
+}

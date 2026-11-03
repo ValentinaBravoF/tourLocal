@@ -10,7 +10,7 @@ export default function PriceSummary({
   tarifaServicio = 10,
   serviceFee,
   total,
-  variante = "pagado", // 'resumen' | 'pagado'
+  variante = "pagado",
 }) {
   const tituloFinal = title !== undefined ? title : titulo;
   const precioUnitario = Number(pricePerPerson ?? precioPorPersona);

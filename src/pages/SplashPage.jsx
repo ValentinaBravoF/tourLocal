@@ -9,7 +9,6 @@ const SplashPage = () => {
   return (
     <div className="splash-page">
       <div className="splash-page__image-container">
-        {/* Nota: Reemplaza esta URL por la ruta de tu imagen local en src/assets */}
         <img
           src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?q=80&w=1000&auto=format&fit=crop"
           alt="Bosque de bambú"

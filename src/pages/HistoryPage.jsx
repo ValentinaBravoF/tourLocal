@@ -62,10 +62,10 @@ export default function HistoryPage() {
               ubicacion={exp.ubicacion}
               calificacion={exp.hasRating ? exp.calificacion : undefined}
               fecha={exp.fecha}
-              onVerDetalles={() => navigate(`/experiencias/${exp.id}`)}
+              onVerDetalles={() => navigate(`/app/experiencias/${exp.id}`)}
               onCalificar={
                 !exp.hasRating
-                  ? () => navigate(`/experiencias/${exp.id}/calificar`)
+                  ? () => navigate(`/app/experiencias/${exp.id}/calificar`)
                   : undefined
               }
             />
@@ -73,7 +73,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="history-page__action">
-          <Button variant="primary" onClick={() => navigate("/explorar")}>
+          <Button variant="primary" onClick={() => navigate("/app/explorar")}>
             Visit more places
           </Button>
         </div>

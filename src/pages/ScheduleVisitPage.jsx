@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
-import SlotCard from "../components/SlotCard/SlotCard";
+import SlotCard from "../components/slotcard/SlotCard";
 import Button from "../components/Button/Button";
 import "./ScheduleVisitPage.css";
 
@@ -37,9 +36,7 @@ export default function ScheduleVisitPage() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(inicio);
   const [horarioSeleccionado, setHorarioSeleccionado] = useState("10:00 AM");
 
-  const dias = Array.from({ length: 6 }, (_, i) =>
-    sumarDias(inicio, i)
-  );
+  const dias = Array.from({ length: 6 }, (_, i) => sumarDias(inicio, i));
 
   const mes = inicio.toLocaleDateString("es-BO", {
     month: "long",
@@ -53,7 +50,6 @@ export default function ScheduleVisitPage() {
     setHorarioSeleccionado(null);
   }
 
-  
   function confirmarHorario() {
     if (!horarioSeleccionado) return;
 
@@ -63,7 +59,7 @@ export default function ScheduleVisitPage() {
       year: "numeric",
     });
 
-    navigate("/confirmar-reserva", {
+    navigate("/app/confirmar-reserva", {
       state: {
         experienciaId: 1,
         fecha: fecha,
@@ -72,7 +68,6 @@ export default function ScheduleVisitPage() {
       },
     });
   }
-
 
   return (
     <div className="schedule-page">
@@ -84,9 +79,7 @@ export default function ScheduleVisitPage() {
 
       <main className="schedule-page__content">
         <section className="schedule-page__place">
-          <div className="schedule-page__thumbnail">
-            LA PAZ
-          </div>
+          <div className="schedule-page__thumbnail">LA PAZ</div>
 
           <div>
             <h2>Letrero "LA PAZ"</h2>
@@ -152,8 +145,7 @@ export default function ScheduleVisitPage() {
           <div className="schedule-page__slots">
             {horarios.map((horario) => {
               const sinCupos = horario.status === "Sin cupos";
-              const seleccionado =
-                horarioSeleccionado === horario.time;
+              const seleccionado = horarioSeleccionado === horario.time;
 
               return (
                 <SlotCard
@@ -165,12 +157,10 @@ export default function ScheduleVisitPage() {
                     sinCupos
                       ? "no-slots"
                       : seleccionado
-                      ? "selected"
-                      : "available"
+                        ? "selected"
+                        : "available"
                   }
-                  onClick={() =>
-                    setHorarioSeleccionado(horario.time)
-                  }
+                  onClick={() => setHorarioSeleccionado(horario.time)}
                 />
               );
             })}

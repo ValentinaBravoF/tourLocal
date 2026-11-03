@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -26,8 +25,6 @@ export default function RateExperiencePage() {
 
     if (calificacion === 0) return;
 
-    // Por ahora guardamos la reseña solo en la página.
-    // Más adelante se conectará al sistema de reservas.
     console.log("Reseña enviada:", {
       experienciaId: id,
       calificacion,
@@ -67,12 +64,9 @@ export default function RateExperiencePage() {
           <section className="rate-page__success">
             <div className="rate-page__success-icon">✓</div>
             <h2>¡Gracias por tu calificación!</h2>
-            <p>
-              Tu opinión nos ayuda a mejorar las experiencias
-              de TourLocal.
-            </p>
+            <p>Tu opinión nos ayuda a mejorar las experiencias de TourLocal.</p>
 
-            <Button onClick={() => navigate("/historial")}>
+            <Button onClick={() => navigate("/app/historial")}>
               Volver a mis experiencias
             </Button>
           </section>
@@ -96,21 +90,17 @@ export default function RateExperiencePage() {
             </section>
 
             <section className="rate-page__comment">
-              <label htmlFor="comentario">
-                Cuéntanos tu experiencia
-              </label>
+              <label htmlFor="comentario">Cuéntanos tu experiencia</label>
 
               <p>
-                ¿Qué fue lo que más te gustó? Tu comentario
-                puede ayudar a otros viajeros.
+                ¿Qué fue lo que más te gustó? Tu comentario puede ayudar a otros
+                viajeros.
               </p>
 
               <textarea
                 id="comentario"
                 value={comentario}
-                onChange={(evento) =>
-                  setComentario(evento.target.value)
-                }
+                onChange={(evento) => setComentario(evento.target.value)}
                 placeholder="Escribe tu comentario aquí..."
                 rows={6}
                 maxLength={500}

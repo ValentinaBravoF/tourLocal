@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import FormField from "../components/FormField/FormField";
 import Button from "../components/Button/Button";
-import NavBar from "../components/NavBar/NavBar";
+import "./EditProfilePage.css";
 
 export default function EditProfilePage() {
   const navigate = useNavigate();
@@ -14,27 +14,26 @@ export default function EditProfilePage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     alert("Perfil actualizado correctamente");
-    navigate("/perfil");
+    navigate("/app/perfil");
   };
 
   return (
-    <div style={{ backgroundColor: "var(--color-background)", minHeight: "100vh", display: "flex", flexDirection: "column", paddingBottom: "70px" }}>
+    <div className="edit-profile-page">
       <HeaderBar
         title="Editar Perfil"
         showBackButton={true}
         onBackClick={() => navigate(-1)}
       />
 
-      <main style={{ padding: "20px 16px", maxWidth: "430px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {/* Avatar selector */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+      <main className="edit-profile-page__content">
+        <form onSubmit={handleSubmit} className="edit-profile-page__form">
+          <div className="edit-profile-page__avatar-section">
             <img
               src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
-              alt="Avatar de Sofía Martínez"
-              style={{ width: "76px", height: "76px", borderRadius: "50%", objectFit: "cover" }}
+              alt="Avatar"
+              className="edit-profile-page__avatar"
             />
-            <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--color-primary)", cursor: "pointer" }}>
+            <span className="edit-profile-page__change-photo">
               Cambiar foto de perfil
             </span>
           </div>
@@ -43,45 +42,31 @@ export default function EditProfilePage() {
             label="Nombre y Apellidos"
             type="text"
             value={nombre}
-            placeholder="Sofía Martínez"
             onChange={(e) => setNombre(e.target.value)}
           />
-
           <FormField
             label="Correo electrónico"
             type="email"
             value={correo}
-            placeholder="sofia.martinez@gmail.com"
             onChange={(e) => setCorreo(e.target.value)}
           />
-
           <FormField
             label="Teléfono"
             type="tel"
             value={telefono}
-            placeholder="+591 ..."
             onChange={(e) => setTelefono(e.target.value)}
           />
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
-            <Button variant="primary" type="submit" onClick={handleSubmit}>
+          <div className="edit-profile-page__actions">
+            <Button variant="primary" type="submit">
               Guardar Cambios
             </Button>
-            <Button variant="secondary" onClick={() => navigate("/perfil")}>
+            <Button variant="secondary" onClick={() => navigate("/app/perfil")}>
               Cancelar
             </Button>
           </div>
         </form>
       </main>
-
-      <NavBar
-        activeTab="profile"
-        onTabChange={(tab) => {
-          if (tab === "explore") navigate("/explorar");
-          if (tab === "history") navigate("/historial");
-          if (tab === "profile") navigate("/perfil");
-        }}
-      />
     </div>
   );
 }

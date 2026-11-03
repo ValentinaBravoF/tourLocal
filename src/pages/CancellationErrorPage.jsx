@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 
 import ReservationDetailCard from "../components/ReservationDetailCard/ReservationDetailCard";
@@ -10,7 +9,6 @@ export default function CancellationErrorPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Datos de ejemplo mientras no exista conexión con reservas.
   const reserva = {
     experiencia: "Recorrido por la Calle de las Brujas",
     guia: "María Fernández",
@@ -21,7 +19,6 @@ export default function CancellationErrorPage() {
   };
 
   function reintentarCancelacion() {
-    // Regresar al formulario desde donde se intentó cancelar.
     if (id) {
       navigate(`/app/cancelar-reserva/${id}`);
     } else {
@@ -46,23 +43,18 @@ export default function CancellationErrorPage() {
 
       <main className="cancellation-error-page__content">
         <section className="cancellation-error-page__message">
-          <div className="cancellation-error-page__icon">
-            !
-          </div>
+          <div className="cancellation-error-page__icon">!</div>
 
           <h2>No se pudo cancelar tu reserva</h2>
 
           <p>
-            Ocurrió un problema al intentar cancelar
-            tu reserva. Por favor, vuelve a intentarlo.
+            Ocurrió un problema al intentar cancelar tu reserva. Por favor,
+            vuelve a intentarlo.
           </p>
 
           <div className="cancellation-error-page__notice">
             <span>ⓘ</span>
-            <p>
-              Tu reserva no ha sido cancelada.
-              Puedes volver a intentarlo.
-            </p>
+            <p>Tu reserva no ha sido cancelada. Puedes volver a intentarlo.</p>
           </div>
         </section>
 
@@ -70,9 +62,7 @@ export default function CancellationErrorPage() {
           <h3>Experiencia</h3>
 
           <div className="cancellation-error-page__experience-card">
-            <div className="cancellation-error-page__thumbnail">
-              📍
-            </div>
+            <div className="cancellation-error-page__thumbnail">📍</div>
 
             <div>
               <h4>{reserva.experiencia}</h4>
@@ -92,10 +82,7 @@ export default function CancellationErrorPage() {
         />
 
         <div className="cancellation-error-page__actions">
-          <Button
-            variant="primary"
-            onClick={reintentarCancelacion}
-          >
+          <Button variant="primary" onClick={reintentarCancelacion}>
             Volver a intentar
           </Button>
 

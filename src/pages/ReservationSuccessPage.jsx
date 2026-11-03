@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
@@ -12,7 +11,6 @@ export default function ReservationSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Datos enviados desde ConfirmReservationPage
   const reserva = location.state?.reserva || {};
 
   return (
@@ -88,7 +86,7 @@ export default function ReservationSuccessPage() {
             descripcion="Tu guía en La Paz"
             calificacion="4.9"
             resenas="320"
-            onVerPerfil={() => navigate("/guias/2")}
+            onVerPerfil={() => navigate("/app/guias/2")}
           />
         </section>
 
@@ -116,10 +114,7 @@ export default function ReservationSuccessPage() {
             Cancelar reserva
           </Button>
 
-          <Button
-            variant="secondary"
-            onClick={() => navigate("/app/explorar")}
-          >
+          <Button variant="secondary" onClick={() => navigate("/app/explorar")}>
             Volver al inicio
           </Button>
         </div>

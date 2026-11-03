@@ -51,7 +51,8 @@ const SignUpPage = () => {
         </div>
 
         <div className="auth-page__actions">
-          <Button variant="primary" onClick={() => navigate("/explorar")}>
+          {/* CORREGIDO AQUÍ: le agregamos el /app/ porque explorar es privada */}
+          <Button variant="primary" onClick={() => navigate("/app/explorar")}>
             Registrarse
           </Button>
           <p className="auth-page__footer-text">

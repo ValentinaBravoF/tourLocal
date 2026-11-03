@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -14,10 +13,8 @@ export default function ConfirmReservationPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Datos recibidos desde Agendar visita
   const datosRecibidos = location.state || {};
 
-  // Datos de ejemplo para el prototipo
   const reserva = {
     experienciaId: datosRecibidos.experienciaId ?? 1,
     experiencia: "Letrero LA PAZ",
@@ -34,7 +31,7 @@ export default function ConfirmReservationPage() {
   };
 
   function confirmarReserva() {
-    navigate("/reserva-confirmada", {
+    navigate("/app/reserva-confirmada", {
       state: { reserva },
     });
   }
@@ -65,9 +62,7 @@ export default function ConfirmReservationPage() {
         </section>
 
         <section className="confirm-reservation-page__section">
-          <h2 className="confirm-reservation-page__section-title">
-            Tu guía
-          </h2>
+          <h2 className="confirm-reservation-page__section-title">Tu guía</h2>
 
           <GuideCard
             nombre={reserva.guia}
@@ -75,7 +70,7 @@ export default function ConfirmReservationPage() {
             ubicacion="La Paz, Bolivia"
             calificacion={4.9}
             resenas={120}
-            onVerPerfil={() => navigate(`/guias/${reserva.guiaId}`)}
+            onVerPerfil={() => navigate(`/app/guias/${reserva.guiaId}`)}
           />
         </section>
 
@@ -98,10 +93,7 @@ export default function ConfirmReservationPage() {
             Confirmar Reserva
           </Button>
 
-          <Button
-            variant="secondary"
-            onClick={() => navigate(-1)}
-          >
+          <Button variant="secondary" onClick={() => navigate(-1)}>
             Modificar Reserva
           </Button>
         </div>

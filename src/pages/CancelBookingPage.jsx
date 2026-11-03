@@ -16,7 +16,6 @@ const CancelBookingPage = () => {
       />
 
       <div className="cancel-page__content">
-        {/* Icono de Alerta Rojo */}
         <div className="cancel-page__alert-icon">
           <svg
             width="48"
@@ -91,7 +90,7 @@ const CancelBookingPage = () => {
           <Button variant="danger" onClick={() => alert("Reserva cancelada")}>
             Cancelar reserva
           </Button>
-          <Button variant="secondary" onClick={() => navigate("/explorar")}>
+          <Button variant="secondary" onClick={() => navigate("/app/explorar")}>
             Volver al inicio
           </Button>
         </div>

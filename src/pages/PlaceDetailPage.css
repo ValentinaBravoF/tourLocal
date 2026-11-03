@@ -1,0 +1,93 @@
+.place-detail-page {
+  background-color: var(--color-background);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.place-detail-page__content {
+  padding: 16px;
+  max-width: 430px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.place-detail-page__hero {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.place-detail-page__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.place-detail-page__category {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.5px;
+}
+.place-detail-page__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+.place-detail-page__location {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.place-detail-page__card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.place-detail-page__card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.place-detail-page__desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.place-detail-page__price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.place-detail-page__price-label {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.place-detail-page__price-value {
+  font-size: 16px;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+.place-detail-page__actions {
+  margin-top: 8px;
+  padding-bottom: 24px;
+}

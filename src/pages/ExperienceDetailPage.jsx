@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 
 import ExperienceSummary from "../components/ExperienceSummary/ExperienceSummary";
@@ -13,7 +12,6 @@ export default function ExperienceDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Datos de ejemplo para la versión frontend.
   const experiencia = {
     nombre: "Recorrido por la Calle de las Brujas",
     ubicacion: "Calle de las Brujas, La Paz, Bolivia",
@@ -21,7 +19,7 @@ export default function ExperienceDetailPage() {
     calificacion: 4.9,
     resenas: "248 reseñas",
     imagen:
-      "https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=600&auto=format&fit=crop",
+      "https://tse1.mm.bing.net/th/id/OIP.g-p7Pw32Tc-8TM-J8gBirQHaFW?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
 
     fecha: "Miércoles, 28 de octubre de 2026",
     horario: "10:00 AM",
@@ -42,7 +40,7 @@ export default function ExperienceDetailPage() {
   };
 
   function irACalificar() {
-    navigate(`/experiencias/${id || 1}/calificar`);
+    navigate(`/app/experiencias/${id || 1}/calificar`);
   }
 
   function volver() {
@@ -70,9 +68,7 @@ export default function ExperienceDetailPage() {
             <span className="experience-detail-page__check">✓</span>
             <div>
               <h2>Experiencia realizada</h2>
-              <p>
-                ¡Esperamos que hayas disfrutado tu recorrido!
-              </p>
+              <p>¡Esperamos que hayas disfrutado tu recorrido!</p>
             </div>
           </div>
         </section>
@@ -112,9 +108,7 @@ export default function ExperienceDetailPage() {
         </section>
 
         <section className="experience-detail-page__section">
-          <h3 className="experience-detail-page__section-title">
-            Tu guía
-          </h3>
+          <h3 className="experience-detail-page__section-title">Tu guía</h3>
 
           <GuideCard
             nombre={experiencia.guia.nombre}
@@ -123,7 +117,7 @@ export default function ExperienceDetailPage() {
             calificacion={experiencia.guia.calificacion}
             resenas={experiencia.guia.resenas}
             onVerPerfil={() =>
-              alert("Perfil del guía pendiente de conectar")
+              navigate(`/app/guias/${experiencia.guia.nombre}`)
             }
           />
         </section>
