@@ -40,7 +40,7 @@ export default function ExperienceDetailPage() {
   };
 
   function irACalificar() {
-    navigate(`/app/experiencias/${id || 1}/calificar`);
+    navigate(`/experiencias/${id || 1}/calificar`);
   }
 
   function volver() {
@@ -130,7 +130,7 @@ export default function ExperienceDetailPage() {
           <button
             type="button"
             className="experience-detail-page__secondary"
-            onClick={() => navigate("/app/explorar")}
+            onClick={() => navigate("/explorar")}
           >
             Volver a explorar
           </button>

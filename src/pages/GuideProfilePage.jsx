@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import RatingBar from "../components/RatingBar/RatingBar";
 import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
@@ -7,6 +7,7 @@ import Button from "../components/Button/Button";
 
 export default function GuideProfilePage() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const experiencias = [
     {

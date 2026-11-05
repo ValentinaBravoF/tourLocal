@@ -1,14 +1,30 @@
-import "./BottomNavigation.css";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import './BottomNavigation.css';
 
 export default function BottomNavigation() {
+  const tabs = [
+    { label: 'Explorar', to: '/explorar' },
+    { label: 'Guardados', to: '/guardados' },
+    { label: 'Historial', to: '/historial' },
+    { label: 'Perfil', to: '/perfil' },
+  ];
+
   return (
     <nav className="bottom-navigation">
-      {/* Inicio tiene la clase extra para que se vea en color primary */}
-      <span className="bottom-navigation__item bottom-navigation__item--active">
-        Inicio
-      </span>
-      <span className="bottom-navigation__item">Reservas</span>
-      <span className="bottom-navigation__item">Perfil</span>
+      {tabs.map((tab) => (
+        <NavLink
+          key={tab.to}
+          to={tab.to}
+          className={({ isActive }) =>
+            `bottom-navigation__item ${
+              isActive ? 'bottom-navigation__item--active' : ''
+            }`
+          }
+        >
+          {tab.label}
+        </NavLink>
+      ))}
     </nav>
   );
 }

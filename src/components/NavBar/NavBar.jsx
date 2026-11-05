@@ -1,11 +1,13 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import './NavBar.css';
 
-const NavBar = ({ activeTab = 'explore', onTabChange, badges = {} }) => {
+const NavBar = ({ badges = {} }) => {
   const navItems = [
     {
       id: 'explore',
       label: 'Explorar',
+      to: '/explorar',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -16,6 +18,7 @@ const NavBar = ({ activeTab = 'explore', onTabChange, badges = {} }) => {
     {
       id: 'saved',
       label: 'Guardados',
+      to: '/guardados',
       badge: badges.saved,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -26,7 +29,8 @@ const NavBar = ({ activeTab = 'explore', onTabChange, badges = {} }) => {
     {
       id: 'history',
       label: 'Historial',
-      badge: badges.history,
+      to: '/historial',
+      badge: badges.history !== undefined ? badges.history : 1,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -39,6 +43,7 @@ const NavBar = ({ activeTab = 'explore', onTabChange, badges = {} }) => {
     {
       id: 'profile',
       label: 'Perfil',
+      to: '/perfil',
       badge: badges.profile,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -51,27 +56,25 @@ const NavBar = ({ activeTab = 'explore', onTabChange, badges = {} }) => {
 
   return (
     <nav className="nav-bar">
-      {navItems.map((item) => {
-        const isActive = activeTab === item.id;
-        return (
-          <button
-            key={item.id}
-            className={`nav-bar__item ${isActive ? 'nav-bar__item--active' : ''}`}
-            onClick={() => onTabChange && onTabChange(item.id)}
-            type="button"
-          >
-            <div className="nav-bar__icon-container">
-              <div className="nav-bar__icon">{item.icon}</div>
-              {item.badge && (
-                <span className="nav-bar__badge">
-                  {typeof item.badge === 'number' ? item.badge : ''}
-                </span>
-              )}
-            </div>
-            <span className="nav-bar__label">{item.label}</span>
-          </button>
-        );
-      })}
+      {navItems.map((item) => (
+        <NavLink
+          key={item.id}
+          to={item.to}
+          className={({ isActive }) =>
+            `nav-bar__item ${isActive ? 'nav-bar__item--active' : ''}`
+          }
+        >
+          <div className="nav-bar__icon-container">
+            <div className="nav-bar__icon">{item.icon}</div>
+            {item.badge && (
+              <span className="nav-bar__badge">
+                {typeof item.badge === 'number' ? item.badge : ''}
+              </span>
+            )}
+          </div>
+          <span className="nav-bar__label">{item.label}</span>
+        </NavLink>
+      ))}
     </nav>
   );
 };

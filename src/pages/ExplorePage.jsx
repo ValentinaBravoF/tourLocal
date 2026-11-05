@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar/SearchBar";
 import CategoryPill from "../components/CategoryPill/CategoryPill";
 import FeaturedCard from "../components/FeaturedCard/FeaturedCard";
+import InfoBox from "../components/InfoBox/InfoBox";
 import "./ExplorePage.css";
 
 const categories = [
@@ -14,53 +15,6 @@ const categories = [
   "Museos",
 ];
 
-const featuredDestinations = [
-  {
-    id: 1,
-    title: 'Letrero "LA PAZ"',
-    location: "Murillo, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=400&auto=format&fit=crop",
-    tag: "Pase Libre",
-    duration: "A 40 minutos",
-    category: "Parques",
-    rating: 4.9,
-  },
-  {
-    id: 2,
-    title: "Tiwanaku",
-    location: "Ingavi, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1589802829985-817e51171b92?q=80&w=400&auto=format&fit=crop",
-    tag: "Tour Guiado",
-    price: "Bs. 100.00",
-    category: "Históricos",
-    rating: 4.8,
-  },
-  {
-    id: 3,
-    title: "Valle de la Luna",
-    location: "Mallasa, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop",
-    tag: "Pase Libre",
-    duration: "A 25 minutos",
-    category: "Parques",
-    rating: 4.7,
-  },
-  {
-    id: 7,
-    title: "Muela del Diablo",
-    location: "Pedregal, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=400&auto=format&fit=crop",
-    tag: "Senderismo",
-    duration: "A 1 hora",
-    category: "Senderismo",
-    rating: 4.6,
-  },
-];
-
 const nearbyAttractions = [
   {
     id: 4,
@@ -70,7 +24,7 @@ const nearbyAttractions = [
     reviews: "2.4k",
     category: "Populares",
     image:
-      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=300&auto=format&fit=crop",
   },
   {
     id: 5,
@@ -80,7 +34,7 @@ const nearbyAttractions = [
     reviews: "1.9k",
     category: "Parques",
     image:
-      "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=300&auto=format&fit=crop",
   },
   {
     id: 6,
@@ -90,7 +44,7 @@ const nearbyAttractions = [
     reviews: "2.4k",
     category: "Históricos",
     image:
-      "https://images.unsplash.com/photo-1589556264807-12c3f4b5d322?q=80&w=200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1589556264807-12c3f4b5d322?q=80&w=300&auto=format&fit=crop",
   },
   {
     id: 8,
@@ -100,7 +54,7 @@ const nearbyAttractions = [
     reviews: "950",
     category: "Museos",
     image:
-      "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?q=80&w=200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?q=80&w=300&auto=format&fit=crop",
   },
 ];
 
@@ -110,27 +64,53 @@ export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [savedIds, setSavedIds] = useState([1, 3]);
 
+  // Estados de la API
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const toggleSave = (id) => {
     setSavedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
+  // Carga de datos desde la API
+  useEffect(() => {
+    async function loadDestinations() {
+      try {
+        setLoading(true);
+        setError("");
+        const response = await fetch(
+          `/api/destinos?categoria=${encodeURIComponent(selectedCategory)}`
+        );
+        const data = await response.json();
+
+        if (response.ok) {
+          setDestinations(data);
+        } else {
+          setError(data.error || "Error al cargar los destinos");
+        }
+      } catch {
+        setError("No se pudo conectar con la API. ¿Está encendida?");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDestinations();
+  }, [selectedCategory]);
+
   const filteredFeatured = useMemo(() => {
-    return featuredDestinations.filter((item) => {
+    return destinations.filter((item) => {
       const matchesSearch =
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (item.location &&
           item.location.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      const matchesCat =
-        selectedCategory === "Todos" ||
-        item.category === selectedCategory ||
-        (selectedCategory === "Populares" && item.rating >= 4.8);
-
-      return matchesSearch && matchesCat;
+      return matchesSearch;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [destinations, searchQuery]);
 
   const filteredNearby = useMemo(() => {
     return nearbyAttractions.filter((item) => {
@@ -148,8 +128,6 @@ export default function ExplorePage() {
     });
   }, [searchQuery, selectedCategory]);
 
-  const hasResults = filteredFeatured.length > 0 || filteredNearby.length > 0;
-
   return (
     <div className="explore-page">
       <main className="explore-page__content">
@@ -163,7 +141,7 @@ export default function ExplorePage() {
             <button
               type="button"
               className="explore-page__notif-btn"
-              onClick={() => navigate("/app/notificaciones")}
+              onClick={() => navigate("/notificaciones")}
               aria-label="Ver notificaciones"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -176,7 +154,7 @@ export default function ExplorePage() {
             <button
               type="button"
               className="explore-page__avatar-btn"
-              onClick={() => navigate("/app/perfil")}
+              onClick={() => navigate("/perfil")}
               aria-label="Ir al perfil"
             >
               <img
@@ -195,7 +173,7 @@ export default function ExplorePage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             onClear={() => setSearchQuery("")}
             placeholder="Buscar lugares o destinos de tu interés..."
-            onFilterClick={() => navigate("/app/lugares")}
+            onFilterClick={() => navigate("/lugares")}
           />
         </section>
 
@@ -214,41 +192,81 @@ export default function ExplorePage() {
           ))}
         </nav>
 
+        {/* Aviso de carga */}
+        {loading && (
+          <InfoBox
+            title="Cargando destinos…"
+            text="Obteniendo lugares disponibles desde la API de TourLocal."
+          />
+        )}
+
+        {/* Aviso de error */}
+        {error && (
+          <InfoBox
+            variant="alert"
+            title="No se pudo cargar"
+            text={error}
+          />
+        )}
+
         {/* Sección Lugares Destacados */}
-        {filteredFeatured.length > 0 && (
+        {!loading && !error && (
           <section className="explore-page__section">
             <div className="explore-page__section-header">
-              <h2 className="explore-page__section-title">Lugares Destacados</h2>
+              <h2 className="explore-page__section-title">
+                Lugares Destacados ({filteredFeatured.length})
+              </h2>
               <button
                 type="button"
                 className="explore-page__see-all"
-                onClick={() => navigate("/app/lugares")}
+                onClick={() => navigate("/lugares")}
               >
                 Ver Todos
               </button>
             </div>
 
-            <div className="explore-page__featured-carousel">
-              {filteredFeatured.map((place) => (
-                <FeaturedCard
-                  key={place.id}
-                  image={place.image}
-                  title={place.title}
-                  location={place.location}
-                  tag={place.tag}
-                  duration={place.duration}
-                  price={place.price}
-                  isSaved={savedIds.includes(place.id)}
-                  onSave={() => toggleSave(place.id)}
-                  onClick={() => navigate(`/app/lugares/${place.id}`)}
-                />
-              ))}
-            </div>
+            {filteredFeatured.length > 0 ? (
+              <div className="explore-page__featured-carousel">
+                {filteredFeatured.map((place) => (
+                  <FeaturedCard
+                    key={place.id}
+                    image={place.image}
+                    title={place.title}
+                    location={place.location}
+                    tag={place.tag}
+                    duration={place.duration}
+                    price={place.price}
+                    isSaved={savedIds.includes(place.id)}
+                    onSave={() => toggleSave(place.id)}
+                    onClick={() => navigate(`/lugares/${place.id}`)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="explore-page__empty">
+                <p className="explore-page__empty-title">
+                  No se encontraron lugares en esta categoría
+                </p>
+                <p className="explore-page__empty-desc">
+                  Intenta con otra categoría o restablece los filtros.
+                </p>
+                <button
+                  type="button"
+                  className="explore-page__reset-btn"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("Todos");
+                  }}
+                >
+                  Mostrar todos
+                </button>
+              </div>
+            )}
           </section>
         )}
 
         {/* Sección Atracciones Cercanas */}
-        {filteredNearby.length > 0 && (
+        {!loading && filteredNearby.length > 0 && (
           <section className="explore-page__section">
             <div className="explore-page__section-header">
               <h2 className="explore-page__section-title">
@@ -257,7 +275,7 @@ export default function ExplorePage() {
               <button
                 type="button"
                 className="explore-page__see-all"
-                onClick={() => navigate("/app/lugares")}
+                onClick={() => navigate("/lugares")}
               >
                 Ver mapa completo
               </button>
@@ -268,12 +286,12 @@ export default function ExplorePage() {
                 <article
                   key={place.id}
                   className="nearby-card"
-                  onClick={() => navigate(`/app/lugares/${place.id}`)}
+                  onClick={() => navigate(`/lugares/${place.id}`)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      navigate(`/app/lugares/${place.id}`);
+                      navigate(`/lugares/${place.id}`);
                     }
                   }}
                 >
@@ -307,28 +325,6 @@ export default function ExplorePage() {
               ))}
             </div>
           </section>
-        )}
-
-        {/* Sin resultados */}
-        {!hasResults && (
-          <div className="explore-page__empty">
-            <p className="explore-page__empty-title">
-              No se encontraron lugares en esta categoría
-            </p>
-            <p className="explore-page__empty-desc">
-              Intenta con otra palabra clave o restablece los filtros.
-            </p>
-            <button
-              type="button"
-              className="explore-page__reset-btn"
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("Todos");
-              }}
-            >
-              Mostrar todos
-            </button>
-          </div>
         )}
       </main>
     </div>
