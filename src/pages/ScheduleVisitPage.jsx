@@ -1,18 +1,10 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import SlotCard from "../components/slotcard/SlotCard";
 import Button from "../components/Button/Button";
 import "./ScheduleVisitPage.css";
-
-const horarios = [
-  { time: "10:00 AM", period: "Mañana", status: "2 restantes" },
-  { time: "11:30 AM", period: "Mediodía", status: "Disponible" },
-  { time: "03:00 PM", period: "Tarde", status: "Sin cupos" },
-  { time: "04:30 PM", period: "Tarde", status: "Disponible" },
-  { time: "06:00 PM", period: "Atardecer", status: "Sin cupos" },
-  { time: "07:30 PM", period: "Noche", status: "Disponible" },
-];
 
 function sumarDias(fecha, cantidad) {
   const nueva = new Date(fecha);
@@ -27,6 +19,12 @@ function fechaClave(fecha) {
 export default function ScheduleVisitPage() {
   const navigate = useNavigate();
 
+  // Datos obtenidos desde el backend
+  const [horarios, setHorarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Estados del calendario
   const [inicio, setInicio] = useState(() => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -34,9 +32,62 @@ export default function ScheduleVisitPage() {
   });
 
   const [fechaSeleccionada, setFechaSeleccionada] = useState(inicio);
-  const [horarioSeleccionado, setHorarioSeleccionado] = useState("10:00 AM");
+  const [horarioSeleccionado, setHorarioSeleccionado] = useState(null);
 
-  const dias = Array.from({ length: 6 }, (_, i) => sumarDias(inicio, i));
+  // Consultar API al cargar la página
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function cargarHorarios() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch("/api/horarios", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          let mensaje = "No se pudieron cargar los horarios";
+
+          try {
+            const dataError = await response.json();
+            mensaje = dataError.error || mensaje;
+          } catch {
+            // Mantener el mensaje general
+          }
+
+          throw new Error(mensaje);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("La API devolvió datos inválidos");
+        }
+
+        setHorarios(data);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setError(err.message || "No se pudo conectar con la API");
+          setHorarios([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    cargarHorarios();
+
+    return () => controller.abort();
+  }, []);
+
+  const dias = Array.from(
+    { length: 6 },
+    (_, i) => sumarDias(inicio, i)
+  );
 
   const mes = inicio.toLocaleDateString("es-BO", {
     month: "long",
@@ -45,13 +96,33 @@ export default function ScheduleVisitPage() {
 
   function cambiarSemana(cantidad) {
     const nuevoInicio = sumarDias(inicio, cantidad);
+
     setInicio(nuevoInicio);
     setFechaSeleccionada(nuevoInicio);
     setHorarioSeleccionado(null);
   }
 
+  function seleccionarFecha(fecha) {
+    setFechaSeleccionada(fecha);
+    setHorarioSeleccionado(null);
+  }
+
+  function seleccionarHorario(horario) {
+    if (horario.status === "Sin cupos") return;
+
+    setHorarioSeleccionado(horario.time);
+  }
+
   function confirmarHorario() {
-    if (!horarioSeleccionado) return;
+    if (loading || error || !horarioSeleccionado) return;
+
+    const horarioValido = horarios.some(
+      (horario) =>
+        horario.time === horarioSeleccionado &&
+        horario.status !== "Sin cupos"
+    );
+
+    if (!horarioValido) return;
 
     const fecha = fechaSeleccionada.toLocaleDateString("es-BO", {
       day: "numeric",
@@ -79,7 +150,9 @@ export default function ScheduleVisitPage() {
 
       <main className="schedule-page__content">
         <section className="schedule-page__place">
-          <div className="schedule-page__thumbnail">LA PAZ</div>
+          <div className="schedule-page__thumbnail">
+            LA PAZ
+          </div>
 
           <div>
             <h2>Letrero "LA PAZ"</h2>
@@ -113,25 +186,26 @@ export default function ScheduleVisitPage() {
           <div className="schedule-page__days">
             {dias.map((fecha) => {
               const seleccionada =
-                fechaClave(fecha) === fechaClave(fechaSeleccionada);
+                fechaClave(fecha) ===
+                fechaClave(fechaSeleccionada);
 
               return (
                 <button
                   key={fechaClave(fecha)}
                   type="button"
                   className={`schedule-page__day ${
-                    seleccionada ? "schedule-page__day--selected" : ""
+                    seleccionada
+                      ? "schedule-page__day--selected"
+                      : ""
                   }`}
-                  onClick={() => {
-                    setFechaSeleccionada(fecha);
-                    setHorarioSeleccionado(null);
-                  }}
+                  onClick={() => seleccionarFecha(fecha)}
                 >
                   <span>
                     {fecha.toLocaleDateString("es-BO", {
                       weekday: "short",
                     })}
                   </span>
+
                   <strong>{fecha.getDate()}</strong>
                 </button>
               );
@@ -142,36 +216,66 @@ export default function ScheduleVisitPage() {
         <section className="schedule-page__schedule">
           <h3>Horarios disponibles</h3>
 
-          <div className="schedule-page__slots">
-            {horarios.map((horario) => {
-              const sinCupos = horario.status === "Sin cupos";
-              const seleccionado = horarioSeleccionado === horario.time;
+          {loading && (
+            <p role="status">
+              Cargando horarios disponibles...
+            </p>
+          )}
 
-              return (
-                <SlotCard
-                  key={horario.time}
-                  time={horario.time}
-                  period={horario.period}
-                  statusText={horario.status}
-                  statusType={
-                    sinCupos
-                      ? "no-slots"
-                      : seleccionado
-                        ? "selected"
-                        : "available"
-                  }
-                  onClick={() => setHorarioSeleccionado(horario.time)}
-                />
-              );
-            })}
-          </div>
+          {!loading && error && (
+            <div role="alert" className="schedule-page__error">
+              <strong>No se pudieron cargar los horarios</strong>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && horarios.length === 0 && (
+            <p role="status">
+              No hay horarios disponibles por el momento.
+            </p>
+          )}
+
+          {!loading && !error && horarios.length > 0 && (
+            <div className="schedule-page__slots">
+              {horarios.map((horario) => {
+                const sinCupos =
+                  horario.status === "Sin cupos";
+
+                const seleccionado =
+                  horarioSeleccionado === horario.time;
+
+                return (
+                  <SlotCard
+                    key={horario.id}
+                    time={horario.time}
+                    period={horario.period}
+                    statusText={horario.status}
+                    statusType={
+                      sinCupos
+                        ? "no-slots"
+                        : seleccionado
+                          ? "selected"
+                          : "available"
+                    }
+                    onClick={() =>
+                      seleccionarHorario(horario)
+                    }
+                  />
+                );
+              })}
+            </div>
+          )}
         </section>
       </main>
 
       <div className="schedule-page__footer">
         <Button
           variant="primary"
-          disabled={!horarioSeleccionado}
+          disabled={
+            loading ||
+            Boolean(error) ||
+            !horarioSeleccionado
+          }
           onClick={confirmarHorario}
         >
           Confirmar Horario

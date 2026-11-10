@@ -1,9 +1,9 @@
+
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import ExperienceSummary from "../components/ExperienceSummary/ExperienceSummary";
 import ReservationDetailCard from "../components/ReservationDetailCard/ReservationDetailCard";
 import PriceSummary from "../components/PriceSummary/PriceSummary";
-import GuideCard from "../components/GuideCard/GuideCard";
 import Button from "../components/Button/Button";
 
 import "./ExperienceDetailPage.css";
@@ -12,39 +12,73 @@ export default function ExperienceDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const experiencia = {
-    nombre: "Recorrido por la Calle de las Brujas",
-    ubicacion: "Calle de las Brujas, La Paz, Bolivia",
-    categoria: "CULTURA Y TRADICIÓN",
-    calificacion: 4.9,
-    resenas: "248 reseñas",
-    imagen:
-      "https://tse1.mm.bing.net/th/id/OIP.g-p7Pw32Tc-8TM-J8gBirQHaFW?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+  const [experiencia, setExperiencia] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    fecha: "Miércoles, 28 de octubre de 2026",
-    horario: "10:00 AM",
-    participantes: 2,
-    notas: "Presentarse 10 minutos antes del recorrido.",
+  useEffect(() => {
+    const controller = new AbortController();
 
-    precioPorPersona: 80,
-    tarifaServicio: 10,
+    async function cargarExperiencia() {
+      setLoading(true);
+      setError("");
+      setExperiencia(null);
 
-    guia: {
-      nombre: "María Fernández",
-      descripcion:
-        "Guía local especializada en historia, cultura y tradiciones de La Paz.",
-      ubicacion: "La Paz, Bolivia",
-      calificacion: 4.9,
-      resenas: 120,
-    },
-  };
+      try {
+        const response = await fetch(`/api/reservas/${id}`, {
+          signal: controller.signal,
+        });
 
-  function irACalificar() {
-    navigate(`/experiencias/${id || 1}/calificar`);
-  }
+        if (!response.ok) {
+          if (response.status === 400) {
+            throw new Error("El ID de la reserva no es válido.");
+          }
+
+          if (response.status === 404) {
+            throw new Error("Reserva no encontrada.");
+          }
+
+          throw new Error(
+            "No se pudo obtener la información de la reserva."
+          );
+        }
+
+        const data = await response.json();
+
+        if (!data || Array.isArray(data) || !data.nombre) {
+          throw new Error("Los datos de la reserva no son válidos.");
+        }
+
+        if (!controller.signal.aborted) {
+          setExperiencia(data);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          const mensaje =
+            err instanceof TypeError || err instanceof SyntaxError
+              ? "No se pudo conectar con la API. Verifica que el backend esté encendido."
+              : err.message;
+
+          setError(mensaje);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    cargarExperiencia();
+
+    return () => controller.abort();
+  }, [id]);
 
   function volver() {
-    navigate(-1);
+    navigate("/historial");
+  }
+
+  function irACalificar() {
+    navigate(`/experiencias/${id}/calificar`);
   }
 
   return (
@@ -54,87 +88,164 @@ export default function ExperienceDetailPage() {
           type="button"
           className="experience-detail-page__back"
           onClick={volver}
-          aria-label="Volver"
+          aria-label="Volver al historial"
         >
           ←
         </button>
 
-        <h1>Detalle de experiencia</h1>
+        <h1>Detalle de la experiencia</h1>
       </header>
 
-      <main className="experience-detail-page__content">
-        <section className="experience-detail-page__intro">
-          <div className="experience-detail-page__status">
-            <span className="experience-detail-page__check">✓</span>
-            <div>
-              <h2>Experiencia realizada</h2>
-              <p>¡Esperamos que hayas disfrutado tu recorrido!</p>
-            </div>
-          </div>
-        </section>
+      <main
+        className="experience-detail-page__content"
+        style={{
+          padding: "20px 16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+        }}
+      >
+        {/* Cargando */}
+        {loading && (
+          <p role="status">Cargando información de la reserva...</p>
+        )}
 
-        <section className="experience-detail-page__section">
-          <ExperienceSummary
-            destino={experiencia.nombre}
-            imagen={experiencia.imagen}
-            ubicacion={experiencia.ubicacion}
-            categoria={experiencia.categoria}
-            calificacion={experiencia.calificacion}
-            resenas={experiencia.resenas}
-            estado="resumen"
-          />
-        </section>
+        {/* Error 400, 404 o de conexión */}
+        {!loading && error && (
+          <section role="alert">
+            <h2>No se pudo cargar la experiencia</h2>
+            <p>{error}</p>
 
-        <section className="experience-detail-page__section">
-          <ReservationDetailCard
-            titulo="Detalles de la reserva"
-            fecha={experiencia.fecha}
-            horario={experiencia.horario}
-            participantes={`${experiencia.participantes} personas`}
-            ubicacion={experiencia.ubicacion}
-            notas={experiencia.notas}
-            estado="normal"
-          />
-        </section>
+            <Button variant="secondary" onClick={volver}>
+              Volver al historial
+            </Button>
+          </section>
+        )}
 
-        <section className="experience-detail-page__section">
-          <PriceSummary
-            titulo="Importe pagado"
-            precioPorPersona={experiencia.precioPorPersona}
-            participantes={experiencia.participantes}
-            tarifaServicio={experiencia.tarifaServicio}
-            variante="pagado"
-          />
-        </section>
+        {/* Datos de la API */}
+        {!loading && !error && experiencia && (
+          <>
+            {/* Imagen y lugar */}
+            <section>
+              {experiencia.imagen && (
+                <img
+                  src={experiencia.imagen}
+                  alt={experiencia.nombre}
+                  style={{
+                    width: "100%",
+                    maxHeight: "230px",
+                    objectFit: "cover",
+                    borderRadius: "12px",
+                  }}
+                />
+              )}
 
-        <section className="experience-detail-page__section">
-          <h3 className="experience-detail-page__section-title">Tu guía</h3>
+              <h2>{experiencia.nombre}</h2>
+              <p>{experiencia.ubicacion}</p>
 
-          <GuideCard
-            nombre={experiencia.guia.nombre}
-            descripcion={experiencia.guia.descripcion}
-            ubicacion={experiencia.guia.ubicacion}
-            calificacion={experiencia.guia.calificacion}
-            resenas={experiencia.guia.resenas}
-            onVerPerfil={() =>
-              navigate(`/app/guias/${experiencia.guia.nombre}`)
-            }
-          />
-        </section>
+              {experiencia.categoria && (
+                <p>{experiencia.categoria}</p>
+              )}
 
-        <div className="experience-detail-page__actions">
-          <Button variant="primary" onClick={irACalificar}>
-            Calificar experiencia
-          </Button>
+              {experiencia.calificacion && (
+                <p>
+                  ★ {experiencia.calificacion}
+                  {experiencia.resenas
+                    ? ` · ${experiencia.resenas} reseñas`
+                    : ""}
+                </p>
+              )}
 
-          <button
-            type="button"
-            className="experience-detail-page__secondary"
-            onClick={() => navigate("/explorar")}
-          >
-            Volver a explorar
-          </button>
-        </div>
+              <p>
+                Estado:{" "}
+                <strong>{experiencia.estado}</strong>
+              </p>
+            </section>
+
+            {/* Detalles de reserva */}
+            <section>
+              <h3>Detalles de la reserva</h3>
+
+              <ReservationDetailCard
+                titulo=""
+                fecha={experiencia.fecha}
+                horario={experiencia.horario || "No registrado"}
+                participantes={
+                  experiencia.participantes
+                    ? `${experiencia.participantes} personas`
+                    : "No registrado"
+                }
+                ubicacion={experiencia.ubicacion}
+                notas={
+                  experiencia.notas ||
+                  "Sin notas adicionales."
+                }
+                estado="normal"
+              />
+            </section>
+
+            {/* Guía de la experiencia */}
+            <section>
+              <h3>Tu guía</h3>
+
+              <p>
+                {experiencia.guia || "Guía no registrado"}
+              </p>
+
+              {experiencia.guiaId && (
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    navigate(`/guias/${experiencia.guiaId}`)
+                  }
+                >
+                  Ver perfil del guía
+                </Button>
+              )}
+            </section>
+
+            {/* Precio si existe */}
+            {experiencia.precioPorPersona != null && (
+              <section>
+                <h3>Resumen del precio</h3>
+
+                <PriceSummary
+                  titulo=""
+                  precioPorPersona={experiencia.precioPorPersona}
+                  participantes={experiencia.participantes || 1}
+                  tarifaServicio={experiencia.tarifaServicio || 0}
+                  variante="resumen"
+                />
+              </section>
+            )}
+
+            {/* Acciones según el tipo de reserva */}
+            {experiencia.tipo === "upcoming" && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  navigate(`/cancelar-reserva/${experiencia.id}`)
+                }
+              >
+                Revisar cancelación
+              </Button>
+            )}
+
+            {experiencia.tipo === "past" &&
+              !experiencia.hasRating && (
+                <Button
+                  variant="primary"
+                  onClick={irACalificar}
+                >
+                  Calificar experiencia
+                </Button>
+              )}
+
+            <Button variant="secondary" onClick={volver}>
+              Volver al historial
+            </Button>
+          </>
+        )}
       </main>
     </div>
   );
