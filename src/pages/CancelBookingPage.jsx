@@ -3,9 +3,28 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import Button from "../components/Button/Button";
 import "./CancelBookingPage.css";
+import { useNavigate, useParams } from "react-router-dom";
 
 const CancelBookingPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const handleCancelar = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/reservas/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        alert("Reserva cancelada exitosamente");
+        navigate("/app/historial"); // O a la pantalla de cancelación exitosa
+      } else {
+        const data = await response.json();
+        alert(data.error || "No se pudo cancelar");
+      }
+    } catch (error) {
+      alert("No se pudo conectar con la API");
+    }
+  };
 
   return (
     <div className="cancel-page">
@@ -87,7 +106,7 @@ const CancelBookingPage = () => {
 
         {/* Botones */}
         <div className="cancel-page__actions">
-          <Button variant="danger" onClick={() => alert("Reserva cancelada")}>
+          <Button variant="danger" onClick={handleCancelar}>
             Cancelar reserva
           </Button>
           <Button variant="secondary" onClick={() => navigate("/app/explorar")}>

@@ -36,18 +36,43 @@ export default function ConfirmReservationPage() {
     });
   }
 
-  function confirmarEnEfectivo() {
-    navigate("/app/reserva-confirmada", {
-      state: {
-        reserva: {
-          ...reserva,
-          metodoPago: "Efectivo al guía",
-          totalPagado: reserva.precioPorPersona * reserva.participantes + reserva.tarifaServicio,
-          idReserva: `TL-${Math.floor(100000 + Math.random() * 900000)}`,
-        },
-      },
-    });
-  }
+  const confirmarEnEfectivo = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/reservas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          experiencia: reserva.experiencia,
+          fecha: reserva.fecha,
+          horario: reserva.horario,
+          participantes: reserva.participantes,
+          total:
+            reserva.precioPorPersona * reserva.participantes +
+            reserva.tarifaServicio,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        navigate("/app/reserva-confirmada", {
+          state: {
+            reserva: {
+              ...reserva,
+              metodoPago: "Efectivo al guía",
+              totalPagado: data.total,
+              idReserva: data.codigo, // Usamos el código que generó la API
+              id: data.id,
+            },
+          },
+        });
+      } else {
+        alert(data.error || "Error al crear la reserva");
+      }
+    } catch (error) {
+      alert("No se pudo conectar con la API. ¿Está encendida?");
+    }
+  };
 
   return (
     <div className="confirm-reservation-page">
@@ -104,7 +129,8 @@ export default function ConfirmReservationPage() {
         <div className="confirm-reservation-page__policy">
           <span className="confirm-reservation-page__policy-icon">🛡️</span>
           <p className="confirm-reservation-page__policy-text">
-            <strong>Cancelación flexible:</strong> Puedes cancelar sin costo hasta 24 horas antes del tour desde tu historial.
+            <strong>Cancelación flexible:</strong> Puedes cancelar sin costo
+            hasta 24 horas antes del tour desde tu historial.
           </p>
         </div>
 
