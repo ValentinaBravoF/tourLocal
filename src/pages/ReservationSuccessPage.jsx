@@ -5,6 +5,7 @@ import GuideCard from "../components/GuideCard/GuideCard";
 import Button from "../components/Button/Button";
 import ExperienceSummary from "../components/ExperienceSummary/ExperienceSummary";
 import ReservationDetailCard from "../components/ReservationDetailCard/ReservationDetailCard";
+import { formatTourDate } from "../services/reservationDates";
 import "./ReservationSuccessPage.css";
 
 export default function ReservationSuccessPage() {
@@ -85,7 +86,7 @@ export default function ReservationSuccessPage() {
           </h2>
           <ReservationDetailCard
             titulo=""
-            fecha={reserva.fecha || "28 de octubre de 2026"}
+            fecha={formatTourDate(reserva.fecha || "28 de octubre de 2026")}
             horario={reserva.horario || "10:00 AM"}
             participantes={`${reserva.participantes ?? 2} personas`}
             ubicacion={reserva.ubicacion || "Murillo, La Paz, Bolivia"}

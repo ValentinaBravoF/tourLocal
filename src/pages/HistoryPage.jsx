@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
 import Button from "../components/Button/Button";
+import { formatTourDate, parseTourDateTime } from "../services/reservationDates";
 import "./HistoryPage.css";
 
 export default function HistoryPage() {
@@ -10,6 +11,7 @@ export default function HistoryPage() {
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [ahora] = useState(() => new Date());
 
   useEffect(() => {
     async function cargarReservas() {
@@ -82,17 +84,27 @@ export default function HistoryPage() {
               Aún no tienes reservas guardadas.
             </p>
           ) : (
-            reservas.map((res) => (
-              <ExperienceCard
-                key={res.id}
-                imagen="https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop"
-                nombre={res.experiencia}
-                ubicacion="La Paz, Bolivia"
-                fecha={res.fecha}
-                estado={res.estado} // "confirmada" o "cancelada"
-                onVerDetalles={() => navigate(`/app/experiencias/${res.id}`)}
-              />
-            ))
+            reservas.map((res) => {
+              const fechaTour = parseTourDateTime(res.fecha, res.horario);
+              const estado =
+                res.estado === "confirmada" &&
+                fechaTour &&
+                fechaTour <= ahora
+                  ? "realizada"
+                  : res.estado;
+
+              return (
+                <ExperienceCard
+                  key={res.id}
+                  imagen="https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop"
+                  nombre={res.experiencia}
+                  ubicacion="La Paz, Bolivia"
+                  fecha={formatTourDate(res.fecha)}
+                  estado={estado}
+                  onVerDetalles={() => navigate(`/app/experiencias/${res.id}`)}
+                />
+              );
+            })
           )}
         </div>
 

@@ -6,6 +6,7 @@ export default function StatusBadge({ estado = "disponible", texto }) {
     confirmada: "Confirmada",
     cancelada: "Cancelada",
     disponible: "Disponible",
+    realizada: "Realizada",
   };
 
   const etiqueta = texto || estados[estado] || estado;

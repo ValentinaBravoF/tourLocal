@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import SlotCard from "../components/slotcard/SlotCard";
 import Button from "../components/Button/Button";
+import { parseTourDateTime } from "../services/reservationDates";
 import "./ScheduleVisitPage.css";
 
 const horarios = [
@@ -24,11 +25,20 @@ function fechaClave(fecha) {
   return `${fecha.getFullYear()}-${fecha.getMonth()}-${fecha.getDate()}`;
 }
 
+function fechaISO(fecha) {
+  return [
+    fecha.getFullYear(),
+    String(fecha.getMonth() + 1).padStart(2, "0"),
+    String(fecha.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 export default function ScheduleVisitPage() {
   const navigate = useNavigate();
+  const [ahora] = useState(() => new Date());
 
   const [inicio, setInicio] = useState(() => {
-    const hoy = new Date();
+    const hoy = new Date(ahora);
     hoy.setHours(0, 0, 0, 0);
     return hoy;
   });
@@ -51,13 +61,17 @@ export default function ScheduleVisitPage() {
   }
 
   function confirmarHorario() {
-    if (!horarioSeleccionado) return;
+    if (
+      !horarioSeleccionado ||
+      parseTourDateTime(
+        fechaISO(fechaSeleccionada),
+        horarioSeleccionado,
+      ) <= ahora
+    ) {
+      return;
+    }
 
-    const fecha = fechaSeleccionada.toLocaleDateString("es-BO", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    const fecha = fechaISO(fechaSeleccionada);
 
     navigate("/app/confirmar-reserva", {
       state: {
@@ -144,7 +158,13 @@ export default function ScheduleVisitPage() {
 
           <div className="schedule-page__slots">
             {horarios.map((horario) => {
-              const sinCupos = horario.status === "Sin cupos";
+              const horarioPasado =
+                parseTourDateTime(
+                  fechaISO(fechaSeleccionada),
+                  horario.time,
+                ) <= ahora;
+              const sinCupos =
+                horario.status === "Sin cupos" || horarioPasado;
               const seleccionado = horarioSeleccionado === horario.time;
 
               return (
@@ -152,7 +172,9 @@ export default function ScheduleVisitPage() {
                   key={horario.time}
                   time={horario.time}
                   period={horario.period}
-                  statusText={horario.status}
+                  statusText={
+                    horarioPasado ? "Horario pasado" : horario.status
+                  }
                   statusType={
                     sinCupos
                       ? "no-slots"
@@ -171,7 +193,13 @@ export default function ScheduleVisitPage() {
       <div className="schedule-page__footer">
         <Button
           variant="primary"
-          disabled={!horarioSeleccionado}
+          disabled={
+            !horarioSeleccionado ||
+            parseTourDateTime(
+              fechaISO(fechaSeleccionada),
+              horarioSeleccionado,
+            ) <= ahora
+          }
           onClick={confirmarHorario}
         >
           Confirmar Horario

@@ -21,3 +21,8 @@
   background-color: var(--color-danger-bg, #fee2e2);
   color: var(--color-danger, #800f0f);
 }
+
+.status-badge--realizada {
+  background-color: var(--color-surface, #ffffff);
+  color: var(--color-muted);
+}

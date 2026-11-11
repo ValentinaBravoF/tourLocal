@@ -1,51 +1,82 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
 import ExperienceSummary from "../components/ExperienceSummary/ExperienceSummary";
 import ReservationDetailCard from "../components/ReservationDetailCard/ReservationDetailCard";
 import PriceSummary from "../components/PriceSummary/PriceSummary";
-import GuideCard from "../components/GuideCard/GuideCard";
 import Button from "../components/Button/Button";
-
+import {
+  formatTourDate,
+  parseTourDateTime,
+} from "../services/reservationDates";
 import "./ExperienceDetailPage.css";
 
 export default function ExperienceDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [reserva, setReserva] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [ahora] = useState(() => new Date());
 
-  const experiencia = {
-    nombre: "Recorrido por la Calle de las Brujas",
-    ubicacion: "Calle de las Brujas, La Paz, Bolivia",
-    categoria: "CULTURA Y TRADICIÓN",
-    calificacion: 4.9,
-    resenas: "248 reseñas",
-    imagen:
-      "https://tse1.mm.bing.net/th/id/OIP.g-p7Pw32Tc-8TM-J8gBirQHaFW?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+  useEffect(() => {
+    const controller = new AbortController();
 
-    fecha: "Miércoles, 28 de octubre de 2026",
-    horario: "10:00 AM",
-    participantes: 2,
-    notas: "Presentarse 10 minutos antes del recorrido.",
+    async function cargarReserva() {
+      try {
+        const response = await fetch(`/api/reservas/${id}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
 
-    precioPorPersona: 80,
-    tarifaServicio: 10,
+        if (!response.ok) {
+          throw new Error(data.error || "No se pudo cargar la reserva");
+        }
 
-    guia: {
-      nombre: "María Fernández",
-      descripcion:
-        "Guía local especializada en historia, cultura y tradiciones de La Paz.",
-      ubicacion: "La Paz, Bolivia",
-      calificacion: 4.9,
-      resenas: 120,
-    },
-  };
+        setReserva(data);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error al cargar el detalle de la reserva:", err);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "No se pudo conectar con la API de reservas",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
 
-  function irACalificar() {
-    navigate(`/experiencias/${id || 1}/calificar`);
-  }
+    cargarReserva();
+    return () => controller.abort();
+  }, [id]);
 
-  function volver() {
-    navigate(-1);
-  }
+  const fechaTour = reserva
+    ? parseTourDateTime(reserva.fecha, reserva.horario)
+    : null;
+  const puedeCancelar =
+    reserva?.estado === "confirmada" &&
+    fechaTour !== null &&
+    fechaTour > ahora;
+  const realizada =
+    reserva?.estado === "confirmada" &&
+    fechaTour !== null &&
+    fechaTour <= ahora;
+
+  const tituloEstado = realizada
+    ? "Experiencia realizada"
+    : reserva?.estado === "cancelada"
+      ? "Reserva cancelada"
+      : puedeCancelar
+        ? "Próxima experiencia"
+        : "No se pudo validar la fecha";
+  const descripcionEstado = realizada
+    ? "¡Esperamos que hayas disfrutado tu recorrido!"
+    : reserva?.estado === "cancelada"
+      ? "Esta reserva fue cancelada."
+      : puedeCancelar
+        ? "Puedes cancelar esta reserva antes de que comience el tour."
+        : "Revisa los datos de fecha y hora de esta reserva.";
 
   return (
     <div className="experience-detail-page">
@@ -53,88 +84,99 @@ export default function ExperienceDetailPage() {
         <button
           type="button"
           className="experience-detail-page__back"
-          onClick={volver}
+          onClick={() => navigate(-1)}
           aria-label="Volver"
         >
           ←
         </button>
-
         <h1>Detalle de experiencia</h1>
       </header>
 
       <main className="experience-detail-page__content">
-        <section className="experience-detail-page__intro">
-          <div className="experience-detail-page__status">
-            <span className="experience-detail-page__check">✓</span>
-            <div>
-              <h2>Experiencia realizada</h2>
-              <p>¡Esperamos que hayas disfrutado tu recorrido!</p>
+        {loading ? (
+          <p role="status">Cargando reserva...</p>
+        ) : error ? (
+          <p role="alert">{error}</p>
+        ) : reserva ? (
+          <>
+            <section className="experience-detail-page__intro">
+              <div className="experience-detail-page__status">
+                <span className="experience-detail-page__check">
+                  {realizada ? "✓" : "•"}
+                </span>
+                <div>
+                  <h2>{tituloEstado}</h2>
+                  <p>{descripcionEstado}</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="experience-detail-page__section">
+              <ExperienceSummary
+                destino={reserva.experiencia}
+                imagen="https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop"
+                ubicacion="La Paz, Bolivia"
+                categoria="EXPERIENCIA"
+                calificacion="4.9"
+                resenas="248 reseñas"
+                estado={reserva.estado}
+              />
+            </section>
+
+            <section className="experience-detail-page__section">
+              <ReservationDetailCard
+                titulo="Detalles de la reserva"
+                fecha={formatTourDate(reserva.fecha)}
+                horario={reserva.horario}
+                participantes={`${reserva.participantes} personas`}
+                ubicacion="La Paz, Bolivia"
+                estado={reserva.estado === "cancelada" ? "cancelacion" : "normal"}
+              />
+            </section>
+
+            <section className="experience-detail-page__section">
+              <PriceSummary
+                titulo="Total de la reserva"
+                precioPorPersona={reserva.total / reserva.participantes}
+                participantes={reserva.participantes}
+                tarifaServicio={0}
+                variante="pagado"
+              />
+            </section>
+
+            <div className="experience-detail-page__actions">
+              {puedeCancelar && (
+                <Button
+                  variant="danger"
+                  onClick={() =>
+                    navigate(`/app/cancelar-reserva/${reserva.id}`, {
+                      state: { reserva },
+                    })
+                  }
+                >
+                  Cancelar reserva
+                </Button>
+              )}
+              {realizada && (
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    navigate(`/experiencias/${reserva.id}/calificar`)
+                  }
+                >
+                  Calificar experiencia
+                </Button>
+              )}
+              <button
+                type="button"
+                className="experience-detail-page__secondary"
+                onClick={() => navigate("/explorar")}
+              >
+                Volver a explorar
+              </button>
             </div>
-          </div>
-        </section>
-
-        <section className="experience-detail-page__section">
-          <ExperienceSummary
-            destino={experiencia.nombre}
-            imagen={experiencia.imagen}
-            ubicacion={experiencia.ubicacion}
-            categoria={experiencia.categoria}
-            calificacion={experiencia.calificacion}
-            resenas={experiencia.resenas}
-            estado="resumen"
-          />
-        </section>
-
-        <section className="experience-detail-page__section">
-          <ReservationDetailCard
-            titulo="Detalles de la reserva"
-            fecha={experiencia.fecha}
-            horario={experiencia.horario}
-            participantes={`${experiencia.participantes} personas`}
-            ubicacion={experiencia.ubicacion}
-            notas={experiencia.notas}
-            estado="normal"
-          />
-        </section>
-
-        <section className="experience-detail-page__section">
-          <PriceSummary
-            titulo="Importe pagado"
-            precioPorPersona={experiencia.precioPorPersona}
-            participantes={experiencia.participantes}
-            tarifaServicio={experiencia.tarifaServicio}
-            variante="pagado"
-          />
-        </section>
-
-        <section className="experience-detail-page__section">
-          <h3 className="experience-detail-page__section-title">Tu guía</h3>
-
-          <GuideCard
-            nombre={experiencia.guia.nombre}
-            descripcion={experiencia.guia.descripcion}
-            ubicacion={experiencia.guia.ubicacion}
-            calificacion={experiencia.guia.calificacion}
-            resenas={experiencia.guia.resenas}
-            onVerPerfil={() =>
-              navigate(`/app/guias/${experiencia.guia.nombre}`)
-            }
-          />
-        </section>
-
-        <div className="experience-detail-page__actions">
-          <Button variant="primary" onClick={irACalificar}>
-            Calificar experiencia
-          </Button>
-
-          <button
-            type="button"
-            className="experience-detail-page__secondary"
-            onClick={() => navigate("/explorar")}
-          >
-            Volver a explorar
-          </button>
-        </div>
+          </>
+        ) : null}
       </main>
     </div>
   );

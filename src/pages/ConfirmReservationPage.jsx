@@ -6,6 +6,7 @@ import Button from "../components/Button/Button";
 import ReservationDetailCard from "../components/ReservationDetailCard/ReservationDetailCard";
 import PriceSummary from "../components/PriceSummary/PriceSummary";
 import { saveReservation } from "../services/reservations";
+import { formatTourDate } from "../services/reservationDates";
 import "./ConfirmReservationPage.css";
 
 export default function ConfirmReservationPage() {
@@ -71,7 +72,7 @@ export default function ConfirmReservationPage() {
           </h2>
           <ReservationDetailCard
             titulo=""
-            fecha={reserva.fecha}
+            fecha={formatTourDate(reserva.fecha)}
             horario={reserva.horario}
             participantes={`${reserva.participantes} personas`}
             ubicacion={reserva.ubicacion}

@@ -1,4 +1,5 @@
 import db from "../db.js";
+import { parseTourDateTime } from "../reservation-dates.js";
 
 // GET: Lista todas las reservas (para el historial)
 export function getReservations(req, res) {
@@ -18,6 +19,7 @@ export function getReservationById(req, res) {
 // POST: Crear una nueva reserva
 export function createReservation(req, res) {
   const { experiencia, fecha, horario, participantes, total } = req.body;
+  const fechaTour = parseTourDateTime(fecha, horario);
 
   if (
     typeof experiencia !== "string" ||
@@ -26,6 +28,7 @@ export function createReservation(req, res) {
     !fecha.trim() ||
     typeof horario !== "string" ||
     !horario.trim() ||
+    !fechaTour ||
     !Number.isInteger(participantes) ||
     participantes < 1 ||
     typeof total !== "number" ||
@@ -35,6 +38,11 @@ export function createReservation(req, res) {
     return res
       .status(400)
       .json({ error: "Los datos de la reserva no son válidos" });
+  }
+  if (fechaTour <= new Date()) {
+    return res
+      .status(400)
+      .json({ error: "No puedes reservar un tour que ya comenzó" });
   }
 
   // Generar código único (ej: TL-1234)
@@ -81,6 +89,18 @@ export function cancelReservation(req, res) {
 
   if (reserva.estado === "cancelada") {
     return res.status(400).json({ error: "La reserva ya está cancelada" });
+  }
+
+  const fechaTour = parseTourDateTime(reserva.fecha, reserva.horario);
+  if (!fechaTour) {
+    return res
+      .status(400)
+      .json({ error: "No se pudo validar la fecha y hora de la reserva" });
+  }
+  if (fechaTour <= new Date()) {
+    return res
+      .status(400)
+      .json({ error: "No se puede cancelar un tour que ya comenzó" });
   }
 
   // Actualizamos el estado en lugar de borrar la fila
