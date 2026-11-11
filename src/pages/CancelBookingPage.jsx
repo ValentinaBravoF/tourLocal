@@ -1,28 +1,33 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import Button from "../components/Button/Button";
 import "./CancelBookingPage.css";
-import { useNavigate, useParams } from "react-router-dom";
 
 const CancelBookingPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+
   const handleCancelar = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/reservas/${id}`, {
+      const response = await fetch(`/api/reservas/${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
         alert("Reserva cancelada exitosamente");
-        navigate("/app/historial"); // O a la pantalla de cancelación exitosa
+        navigate("/app/historial");
       } else {
         const data = await response.json();
         alert(data.error || "No se pudo cancelar");
       }
     } catch (error) {
-      alert("No se pudo conectar con la API");
+      console.error("Error al cancelar la reserva:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "No se pudo conectar con la API",
+      );
     }
   };
 
@@ -53,7 +58,6 @@ const CancelBookingPage = () => {
         </div>
         <h2 className="cancel-page__title">Cancelar Reserva</h2>
 
-        {/* Tarjeta de Lugar */}
         <div className="cancel-page__card cancel-page__place-card">
           <img
             src="https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop"
@@ -68,7 +72,6 @@ const CancelBookingPage = () => {
           </div>
         </div>
 
-        {/* Detalles de la Reserva */}
         <h3 className="cancel-page__section-title">Detalles de la reserva</h3>
         <div className="cancel-page__card cancel-page__details-card">
           <div className="cancel-page__row">
@@ -81,11 +84,11 @@ const CancelBookingPage = () => {
           </div>
           <div className="cancel-page__row">
             <span>Participantes</span>
-            <span>2 people</span>
+            <span>2 personas</span>
           </div>
           <div className="cancel-page__row">
             <span>Ubicación</span>
-            <span>Arashima, Kyoto, Japan</span>
+            <span>Murillo, La Paz, Bolivia</span>
           </div>
           <div className="cancel-page__row">
             <span>Notas</span>
@@ -93,7 +96,6 @@ const CancelBookingPage = () => {
           </div>
         </div>
 
-        {/* Guía */}
         <h3 className="cancel-page__section-title">Ver mi reserva</h3>
         <div className="cancel-page__card cancel-page__guide-card">
           <div>
@@ -104,7 +106,6 @@ const CancelBookingPage = () => {
           <span className="cancel-page__link">Ver perfil</span>
         </div>
 
-        {/* Botones */}
         <div className="cancel-page__actions">
           <Button variant="danger" onClick={handleCancelar}>
             Cancelar reserva

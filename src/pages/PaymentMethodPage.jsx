@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import Button from "../components/Button/Button";
+import { saveReservation } from "../services/reservations";
 import "./PaymentMethodPage.css";
 
 export default function PaymentMethodPage() {
@@ -43,15 +44,16 @@ export default function PaymentMethodPage() {
     }
   }
 
-  function finalizarPago() {
+  async function finalizarPago() {
     setProcesando(true);
 
-    setTimeout(() => {
-      setProcesando(false);
+    try {
+      const data = await saveReservation(reserva, totalFinal);
       navigate("/app/reserva-confirmada", {
         state: {
           reserva: {
             ...reserva,
+            id: data.id,
             metodoPago:
               metodo === "qr"
                 ? "QR Simple"
@@ -60,13 +62,21 @@ export default function PaymentMethodPage() {
                 : metodo === "tigo"
                 ? "Tigo Money"
                 : "Efectivo al guía",
-            totalPagado: totalFinal,
+            totalPagado: data.total,
             estado: "confirmada",
-            idReserva: `TL-${Math.floor(100000 + Math.random() * 900000)}`,
+            idReserva: data.codigo,
           },
         },
       });
-    }, 800);
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "No se pudo conectar con la API. ¿Está encendida?",
+      );
+    } finally {
+      setProcesando(false);
+    }
   }
 
   return (

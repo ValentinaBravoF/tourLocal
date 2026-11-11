@@ -9,6 +9,6 @@
     "test": "node test-controllers.js"
   },
   "dependencies": {
-    "express": "^5.0.0"
+    "express": "^5.3.0"
   }
 }

@@ -19,11 +19,22 @@ export function getReservationById(req, res) {
 export function createReservation(req, res) {
   const { experiencia, fecha, horario, participantes, total } = req.body;
 
-  // Validación 400: si faltan datos
-  if (!experiencia || !fecha || !horario || !participantes || !total) {
+  if (
+    typeof experiencia !== "string" ||
+    !experiencia.trim() ||
+    typeof fecha !== "string" ||
+    !fecha.trim() ||
+    typeof horario !== "string" ||
+    !horario.trim() ||
+    !Number.isInteger(participantes) ||
+    participantes < 1 ||
+    typeof total !== "number" ||
+    !Number.isFinite(total) ||
+    total < 0
+  ) {
     return res
       .status(400)
-      .json({ error: "Faltan campos requeridos para la reserva" });
+      .json({ error: "Los datos de la reserva no son válidos" });
   }
 
   // Generar código único (ej: TL-1234)
@@ -55,6 +66,7 @@ export function createReservation(req, res) {
       estado: "confirmada",
     });
   } catch (error) {
+    console.error("Error al guardar la reserva:", error);
     res.status(500).json({ error: "Error al guardar la reserva" });
   }
 }

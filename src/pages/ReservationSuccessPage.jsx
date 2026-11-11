@@ -138,16 +138,18 @@ export default function ReservationSuccessPage() {
             Ver en mis reservas
           </Button>
 
-          <Button
-            variant="danger"
-            onClick={() =>
-              navigate(`/app/cancelar-reserva/${reserva.experienciaId ?? 1}`, {
-                state: { reserva },
-              })
-            }
-          >
-            Cancelar reserva
-          </Button>
+          {reserva.id && (
+            <Button
+              variant="danger"
+              onClick={() =>
+                navigate(`/app/cancelar-reserva/${reserva.id}`, {
+                  state: { reserva },
+                })
+              }
+            >
+              Cancelar reserva
+            </Button>
+          )}
 
           <Button variant="secondary" onClick={() => navigate("/app/explorar")}>
             Volver al inicio

@@ -1,6 +1,9 @@
 import { DatabaseSync } from "node:sqlite";
+import { fileURLToPath } from "node:url";
 
-const db = new DatabaseSync("tourlocal.db");
+const db = new DatabaseSync(
+  fileURLToPath(new URL("../tourlocal.db", import.meta.url)),
+);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS reservations (
