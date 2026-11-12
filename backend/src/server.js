@@ -1,6 +1,6 @@
 import express from "express";
 import destinationsRouter from "./routes/destinations.routes.js";
-import horariosRouter from "./routes/horarios.routes.js";
+import schedulesRouter from "./routes/schedules.routes.js";
 import guidesRouter from "./routes/guides.routes.js";
 import guardadosRouter from "./routes/guardados.routes.js";
 import reservationsRouter from "./routes/reservations.routes.js";
@@ -17,12 +17,16 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/destinos", destinationsRouter);
 app.use("/api/tours", destinationsRouter);
-app.use("/api/horarios", horariosRouter);
+
+// Horarios desde SQLite
+app.use("/api/horarios", schedulesRouter);
+
 app.use("/api/guias", guidesRouter);
 app.use("/api/guardados", guardadosRouter);
 app.use("/api/reservas", reservationsRouter);
 
 const idsCercanos = [4, 5, 6, 8];
+
 const atraccionesCercanas = destinations
   .filter((destino) => idsCercanos.includes(destino.id))
   .map((destino) => ({
@@ -48,7 +52,10 @@ app.get("/api/atracciones-cercanas/:id", (req, res) => {
     });
   }
 
-  const atraccion = atraccionesCercanas.find((item) => item.id === id);
+  const atraccion = atraccionesCercanas.find(
+    (item) => item.id === id
+  );
+
   if (!atraccion) {
     return res.status(404).json({
       error: "Atracción no encontrada",
@@ -59,7 +66,9 @@ app.get("/api/atracciones-cercanas/:id", (req, res) => {
 });
 
 app.use((req, res) => {
-  res.status(404).json({ error: "Ruta no encontrada" });
+  res.status(404).json({
+    error: "Ruta no encontrada",
+  });
 });
 
 app.listen(PORT, () => {
