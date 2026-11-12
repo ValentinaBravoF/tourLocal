@@ -4,6 +4,11 @@ import HeaderBar from "../components/HeaderBar/HeaderBar";
 import SearchBar from "../components/SearchBar/SearchBar";
 import CategoryPill from "../components/CategoryPill/CategoryPill";
 import FeaturedCard from "../components/FeaturedCard/FeaturedCard";
+import {
+  getSavedPlaces,
+  removeSavedPlace,
+  savePlace,
+} from "../services/savedPlaces";
 import "./AllPlacesPage.css";
 
 const ALL_DESTINATIONS = [
@@ -131,13 +136,49 @@ export default function AllPlacesPage() {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("populares");
-  const [savedIds, setSavedIds] = useState([1, 3]);
+  const [savedIds, setSavedIds] = useState([]);
+  const [savingIds, setSavingIds] = useState([]);
+  const [savedError, setSavedError] = useState("");
 
-  const toggleSave = (id) => {
-    setSavedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+  React.useEffect(() => {
+    const controller = new AbortController();
+
+    getSavedPlaces(controller.signal)
+      .then((places) => {
+        if (!controller.signal.aborted) {
+          setSavedIds(places.map((place) => place.id));
+        }
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setSavedError(err.message);
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  async function toggleSave(id) {
+    if (savingIds.includes(id)) return;
+
+    setSavingIds((previous) => [...previous, id]);
+    setSavedError("");
+    try {
+      if (savedIds.includes(id)) {
+        await removeSavedPlace(id);
+        setSavedIds((previous) => previous.filter((savedId) => savedId !== id));
+      } else {
+        await savePlace(id);
+        setSavedIds((previous) =>
+          previous.includes(id) ? previous : [...previous, id],
+        );
+      }
+    } catch (err) {
+      setSavedError(err instanceof Error ? err.message : "No se pudo actualizar el guardado.");
+    } finally {
+      setSavingIds((previous) => previous.filter((savingId) => savingId !== id));
+    }
+  }
 
   const filteredPlaces = useMemo(() => {
     return ALL_DESTINATIONS.filter((item) => {
@@ -165,6 +206,7 @@ export default function AllPlacesPage() {
       />
 
       <main className="all-places-page__content">
+        {savedError && <p role="alert">{savedError}</p>}
         {/* Barra de búsqueda */}
         <section className="all-places-page__search">
           <SearchBar
@@ -222,6 +264,7 @@ export default function AllPlacesPage() {
                 price={place.price}
                 isSaved={savedIds.includes(place.id)}
                 onSave={() => toggleSave(place.id)}
+                saveDisabled={savingIds.includes(place.id)}
                 onClick={() => navigate(`/app/lugares/${place.id}`)}
               />
             ))}

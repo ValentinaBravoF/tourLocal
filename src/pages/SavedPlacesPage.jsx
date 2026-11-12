@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
+import { getSavedPlaces, removeSavedPlace } from "../services/savedPlaces";
 import "./SavedPlacesPage.css";
 
 export default function SavedPlacesPage() {
@@ -11,6 +12,8 @@ export default function SavedPlacesPage() {
   const [lugaresGuardados, setLugaresGuardados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [removingId, setRemovingId] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -20,16 +23,7 @@ export default function SavedPlacesPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch("/api/guardados", {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error("No se pudieron cargar los lugares guardados.");
-        }
-
-        const data = await response.json();
-
+        const data = await getSavedPlaces(controller.signal);
         if (!Array.isArray(data)) {
           throw new Error("La API devolvió datos inválidos.");
         }
@@ -39,9 +33,7 @@ export default function SavedPlacesPage() {
         }
       } catch (err) {
         if (!controller.signal.aborted) {
-          setError(
-            "No se pudieron cargar los guardados. Verifica que el backend esté encendido."
-          );
+          setError(err instanceof Error ? err.message : "No se pudieron cargar los guardados.");
           setLugaresGuardados([]);
         }
       } finally {
@@ -55,6 +47,27 @@ export default function SavedPlacesPage() {
 
     return () => controller.abort();
   }, []);
+
+  async function quitarGuardado(id) {
+    if (removingId !== null) return;
+
+    setRemovingId(id);
+    setActionError("");
+    try {
+      await removeSavedPlace(id);
+      setLugaresGuardados((previous) =>
+        previous.filter((lugar) => lugar.id !== id),
+      );
+    } catch (err) {
+      setActionError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo quitar el lugar guardado.",
+      );
+    } finally {
+      setRemovingId(null);
+    }
+  }
 
   return (
     <div className="saved-page">
@@ -86,6 +99,8 @@ export default function SavedPlacesPage() {
           </div>
         )}
 
+        {actionError && <p role="alert">{actionError}</p>}
+
         {!loading && !error && lugaresGuardados.length === 0 && (
           <p role="status">
             Todavía no tienes lugares guardados.
@@ -105,6 +120,8 @@ export default function SavedPlacesPage() {
                 onVerDetalles={() =>
                   navigate(`/lugares/${lugar.id}`)
                 }
+                onQuitarGuardado={() => quitarGuardado(lugar.id)}
+                guardadoLoading={removingId === lugar.id}
               />
             ))}
           </div>

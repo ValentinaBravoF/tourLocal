@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import SlotCard from "../components/slotcard/SlotCard";
 import Button from "../components/Button/Button";
@@ -26,10 +26,14 @@ function fechaISO(fecha) {
 
 export default function ScheduleVisitPage() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [ahora] = useState(() => new Date());
   const [horarios, setHorarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lugar, setLugar] = useState(null);
+  const [lugarLoading, setLugarLoading] = useState(true);
+  const [lugarError, setLugarError] = useState("");
 
   const [inicio, setInicio] = useState(() => {
     const hoy = new Date(ahora);
@@ -41,6 +45,76 @@ export default function ScheduleVisitPage() {
 
   useEffect(() => {
     const controller = new AbortController();
+
+    async function cargarLugar() {
+      try {
+        setLugarLoading(true);
+        setLugarError("");
+        setLugar(null);
+
+        const [lugarResponse, guiasResponse] = await Promise.all([
+          fetch(`/api/destinos/${id}`, { signal: controller.signal }),
+          fetch("/api/guias", { signal: controller.signal }),
+        ]);
+
+        if (!lugarResponse.ok) {
+          const data = await lugarResponse.json();
+          throw new Error(data.error || "No se pudo cargar el destino.");
+        }
+        if (!guiasResponse.ok) {
+          throw new Error("No se pudo cargar la información de los guías.");
+        }
+
+        const [lugarData, guias] = await Promise.all([
+          lugarResponse.json(),
+          guiasResponse.json(),
+        ]);
+        if (
+          !lugarData ||
+          !lugarData.title ||
+          !Array.isArray(guias)
+        ) {
+          throw new Error("La API devolvió información inválida del destino.");
+        }
+
+        const guia = guias.find(
+          (item) => item.name === lugarData.guide?.nombre,
+        );
+        if (!guia) {
+          throw new Error("No se encontró el guía asignado a este destino.");
+        }
+
+        const precioTexto = String(lugarData.price || "");
+        const precioEncontrado = precioTexto.match(/\d+(?:\.\d+)?/);
+        const precioPorPersona = /gratis/i.test(precioTexto)
+          ? 0
+          : precioEncontrado
+            ? Number(precioEncontrado[0])
+            : 80;
+
+        if (!controller.signal.aborted) {
+          setLugar({
+            ...lugarData,
+            guiaId: guia.id,
+            precioPorPersona,
+          });
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setLugarError(
+            err instanceof TypeError || err instanceof SyntaxError
+              ? "No se pudo conectar con la API. Verifica que el backend esté encendido."
+              : err instanceof Error
+                ? err.message
+                : "No se pudo cargar el destino.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLugarLoading(false);
+        }
+      }
+    }
 
     async function cargarHorarios() {
       try {
@@ -88,9 +162,10 @@ export default function ScheduleVisitPage() {
       }
     }
 
+    cargarLugar();
     cargarHorarios();
     return () => controller.abort();
-  }, []);
+  }, [id]);
 
   const dias = Array.from({ length: 6 }, (_, i) => sumarDias(inicio, i));
   const mes = inicio.toLocaleDateString("es-BO", {
@@ -144,11 +219,27 @@ export default function ScheduleVisitPage() {
         !horarioEstaPasado(horario.time),
     );
 
-    if (loading || error || !horarioDisponible) return;
+    if (
+      loading ||
+      error ||
+      lugarLoading ||
+      lugarError ||
+      !lugar ||
+      !horarioDisponible
+    ) {
+      return;
+    }
 
     navigate("/app/confirmar-reserva", {
       state: {
-        experienciaId: 1,
+        experienciaId: Number(id),
+        experiencia: lugar.title,
+        ubicacion: lugar.location,
+        imagen: lugar.image,
+        categoria: lugar.category,
+        guiaId: lugar.guiaId,
+        precioPorPersona: lugar.precioPorPersona,
+        tarifaServicio: 10,
         fecha: fechaISO(fechaSeleccionada),
         horario: horarioSeleccionado,
         participantes: 2,
@@ -162,6 +253,13 @@ export default function ScheduleVisitPage() {
       horario.status !== "Sin cupos" &&
       !horarioEstaPasado(horario.time),
   );
+  const puedeConfirmar =
+    !loading &&
+    !error &&
+    !lugarLoading &&
+    !lugarError &&
+    Boolean(lugar) &&
+    horarioSeleccionadoDisponible;
 
   return (
     <div className="schedule-page">
@@ -173,10 +271,24 @@ export default function ScheduleVisitPage() {
 
       <main className="schedule-page__content">
         <section className="schedule-page__place">
-          <div className="schedule-page__thumbnail">LA PAZ</div>
+          {lugar?.image && (
+            <img
+              className="schedule-page__thumbnail"
+              src={lugar.image}
+              alt={lugar.title}
+            />
+          )}
           <div>
-            <h2>Letrero "LA PAZ"</h2>
-            <p>Murillo, La Paz, Bolivia</p>
+            {lugarLoading && <p role="status">Cargando destino...</p>}
+            {!lugarLoading && lugarError && (
+              <p role="alert">{lugarError}</p>
+            )}
+            {lugar && (
+              <>
+                <h2>{lugar.title}</h2>
+                <p>{lugar.location}</p>
+              </>
+            )}
           </div>
         </section>
 
@@ -280,7 +392,7 @@ export default function ScheduleVisitPage() {
       <div className="schedule-page__footer">
         <Button
           variant="primary"
-          disabled={loading || Boolean(error) || !horarioSeleccionadoDisponible}
+          disabled={!puedeConfirmar}
           onClick={confirmarHorario}
         >
           Confirmar Horario

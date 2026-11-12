@@ -11,6 +11,7 @@ const FeaturedCard = ({
   onClick,
   isSaved = false,
   onSave,
+  saveDisabled = false,
 }) => {
   return (
     <div
@@ -32,6 +33,8 @@ const FeaturedCard = ({
             type="button"
             className={`featured-card__save-btn ${isSaved ? 'featured-card__save-btn--active' : ''}`}
             aria-label={isSaved ? "Quitar de guardados" : "Guardar lugar"}
+            aria-pressed={isSaved}
+            disabled={saveDisabled}
             onClick={(e) => {
               e.stopPropagation();
               onSave();

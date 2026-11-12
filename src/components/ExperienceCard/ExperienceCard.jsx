@@ -11,8 +11,11 @@ export default function ExperienceCard({
   resenas,
   fecha,
   estado,
+  onImageError,
   onVerDetalles,
   onCalificar,
+  onQuitarGuardado,
+  guardadoLoading = false,
 }) {
   const estadoVisual =
     estado === "reservada" ? "confirmada" : estado;
@@ -28,6 +31,7 @@ export default function ExperienceCard({
           className="experience-card__image"
           src={imagen}
           alt={nombre}
+          onError={onImageError}
         />
       )}
 
@@ -69,7 +73,7 @@ export default function ExperienceCard({
           />
         )}
 
-        {(onVerDetalles || onCalificar) && (
+        {(onVerDetalles || onCalificar || onQuitarGuardado) && (
           <div className="experience-card__actions">
             {onVerDetalles && (
               <button
@@ -88,6 +92,17 @@ export default function ExperienceCard({
                 onClick={onCalificar}
               >
                 Calificar
+              </button>
+            )}
+
+            {onQuitarGuardado && (
+              <button
+                type="button"
+                className="experience-card__button experience-card__button--secondary"
+                onClick={onQuitarGuardado}
+                disabled={guardadoLoading}
+              >
+                {guardadoLoading ? "Quitando..." : "Quitar de guardados"}
               </button>
             )}
           </div>

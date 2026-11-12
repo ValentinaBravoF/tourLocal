@@ -5,6 +5,12 @@ import SearchBar from "../components/SearchBar/SearchBar";
 import CategoryPill from "../components/CategoryPill/CategoryPill";
 import FeaturedCard from "../components/FeaturedCard/FeaturedCard";
 import InfoBox from "../components/InfoBox/InfoBox";
+import { getCurrentUser } from "../services/userService";
+import {
+  getSavedPlaces,
+  removeSavedPlace,
+  savePlace,
+} from "../services/savedPlaces";
 import "./ExplorePage.css";
 
 const categories = [
@@ -78,11 +84,15 @@ async function fetchApi(url, signal) {
 
 export default function ExplorePage() {
   const navigate = useNavigate();
+  const usuario = getCurrentUser();
+  const nombreUsuario = usuario?.nombre?.trim() || "Viajero";
 
   // Estados de interacción
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
-  const [savedIds, setSavedIds] = useState([1, 3]);
+  const [savedIds, setSavedIds] = useState([]);
+  const [savingIds, setSavingIds] = useState([]);
+  const [savedError, setSavedError] = useState("");
 
   // Estados de destinos destacados
   const [destinations, setDestinations] = useState([]);
@@ -94,13 +104,44 @@ export default function ExplorePage() {
   const [nearbyLoading, setNearbyLoading] = useState(true);
   const [nearbyError, setNearbyError] = useState("");
 
-  // Guardar y quitar destinos (estado local)
-  function toggleSave(id) {
-    setSavedIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((item) => item !== id)
-        : [...prev, id]
-    );
+  useEffect(() => {
+    const controller = new AbortController();
+
+    getSavedPlaces(controller.signal)
+      .then((places) => {
+        if (!controller.signal.aborted) {
+          setSavedIds(places.map((place) => place.id));
+        }
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setSavedError(err.message);
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  async function toggleSave(id) {
+    if (savingIds.includes(id)) return;
+
+    setSavingIds((previous) => [...previous, id]);
+    setSavedError("");
+    try {
+      if (savedIds.includes(id)) {
+        await removeSavedPlace(id);
+        setSavedIds((previous) => previous.filter((savedId) => savedId !== id));
+      } else {
+        await savePlace(id);
+        setSavedIds((previous) =>
+          previous.includes(id) ? previous : [...previous, id],
+        );
+      }
+    } catch (err) {
+      setSavedError(err instanceof Error ? err.message : "No se pudo actualizar el guardado.");
+    } finally {
+      setSavingIds((previous) => previous.filter((savingId) => savingId !== id));
+    }
   }
 
   // API 1: Obtener destinos destacados
@@ -218,7 +259,7 @@ export default function ExplorePage() {
             </span>
 
             <h1 className="explore-page__user-name">
-              Sofía Martínez
+              {nombreUsuario}
             </h1>
           </div>
 
@@ -249,8 +290,11 @@ export default function ExplorePage() {
               aria-label="Ir al perfil"
             >
               <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=120&auto=format&fit=crop"
-                alt="Sofía Martínez"
+                src={
+                  usuario?.foto ||
+                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=120&auto=format&fit=crop"
+                }
+                alt={nombreUsuario}
                 className="explore-page__avatar"
               />
             </button>
@@ -301,6 +345,11 @@ export default function ExplorePage() {
         )}
 
         {/* Lugares destacados */}
+        {savedError && (
+          <p role="alert" className="explore-page__error">
+            {savedError}
+          </p>
+        )}
         {!loading && !error && (
           <section className="explore-page__section">
             <div className="explore-page__section-header">
@@ -330,6 +379,7 @@ export default function ExplorePage() {
                     price={place.price}
                     isSaved={savedIds.includes(place.id)}
                     onSave={() => toggleSave(place.id)}
+                    saveDisabled={savingIds.includes(place.id)}
                     onClick={() =>
                       navigate(`/lugares/${place.id}`)
                     }

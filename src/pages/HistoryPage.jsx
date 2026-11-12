@@ -5,10 +5,35 @@ import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
 import Button from "../components/Button/Button";
 import StatusBadge from "../components/StatusBadge/StatusBadge";
 import { formatTourDate, parseTourDateTime } from "../services/reservationDates";
+import destinations from "../data/destinations";
+import imagenPredeterminada from "../assets/hero.png";
 import "./HistoryPage.css";
 
-const imagenPredeterminada =
-  "https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=300&auto=format&fit=crop";
+function normalizarNombre(nombre) {
+  return String(nombre || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLocaleLowerCase("es");
+}
+
+function obtenerImagenReserva(reserva) {
+  if (reserva.imagen) return reserva.imagen;
+
+  const nombre = normalizarNombre(reserva.experiencia || reserva.nombre);
+  const destino = destinations.find(
+    (item) =>
+      normalizarNombre(item.title) === nombre ||
+      normalizarNombre(item.name) === nombre,
+  );
+
+  return destino?.image || imagenPredeterminada;
+}
+
+function reemplazarImagenRota(event) {
+  event.currentTarget.onerror = null;
+  event.currentTarget.src = imagenPredeterminada;
+}
 
 export default function HistoryPage() {
   const navigate = useNavigate();
@@ -43,7 +68,12 @@ export default function HistoryPage() {
         }
 
         if (!controller.signal.aborted) {
-          setReservas(data);
+          setReservas(
+            data.map((reserva) => ({
+              ...reserva,
+              imagen: obtenerImagenReserva(reserva),
+            })),
+          );
         }
       } catch (err) {
         if (!controller.signal.aborted) {
@@ -113,7 +143,7 @@ export default function HistoryPage() {
           horario: nuevaReserva.horario || "Horario por confirmar",
           participantes: nuevaReserva.participantes ?? 2,
           estado: nuevaReserva.estado || "confirmada",
-          imagen: imagenPredeterminada,
+          imagen: nuevaReserva.imagen || obtenerImagenReserva(nuevaReserva),
           tipo: "upcoming",
           provisional: nuevaReserva.id == null,
         });
@@ -187,9 +217,10 @@ export default function HistoryPage() {
                     <article key={item.id} className="upcoming-card">
                       <div className="upcoming-card__header">
                         <img
-                          src={item.imagen || imagenPredeterminada}
+                          src={item.imagen || obtenerImagenReserva(item)}
                           alt={item.nombre || item.experiencia}
                           className="upcoming-card__image"
+                          onError={reemplazarImagenRota}
                         />
                         <div className="upcoming-card__info">
                           <div className="upcoming-card__badge-row">
@@ -251,7 +282,7 @@ export default function HistoryPage() {
                   pastExperiences.map((experiencia) => (
                     <ExperienceCard
                       key={experiencia.id}
-                      imagen={experiencia.imagen || imagenPredeterminada}
+                      imagen={experiencia.imagen || obtenerImagenReserva(experiencia)}
                       nombre={experiencia.nombre || experiencia.experiencia}
                       guia={experiencia.guia}
                       ubicacion={experiencia.ubicacion}
@@ -266,6 +297,7 @@ export default function HistoryPage() {
                           ? "realizada"
                           : experiencia.estado
                       }
+                      onImageError={reemplazarImagenRota}
                       onVerDetalles={() => verDetalles(experiencia)}
                       onCalificar={
                         !experiencia.hasRating
