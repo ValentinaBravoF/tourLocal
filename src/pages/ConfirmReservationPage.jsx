@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import GuideCard from "../components/GuideCard/GuideCard";
@@ -22,22 +22,96 @@ export default function ConfirmReservationPage() {
     participantes: datosRecibidos.participantes ?? 2,
     ubicacion: datosRecibidos.ubicacion || "Murillo, La Paz, Bolivia",
     notas: datosRecibidos.notas || "Presentarse 10 minutos antes.",
-    guia: datosRecibidos.guia || "María Fernández",
     guiaId: datosRecibidos.guiaId ?? 1,
     precioPorPersona: datosRecibidos.precioPorPersona ?? 80,
     tarifaServicio: datosRecibidos.tarifaServicio ?? 10,
+    estado: "confirmada",
   };
 
   const total =
     reserva.precioPorPersona * reserva.participantes + reserva.tarifaServicio;
+  const [guia, setGuia] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [guardando, setGuardando] = useState(false);
 
-  const confirmarEnEfectivo = async () => {
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function cargarGuia() {
+      try {
+        setLoading(true);
+        setError("");
+        setGuia(null);
+
+        const response = await fetch(`/api/guias/${reserva.guiaId}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Guía no encontrado.");
+          }
+          if (response.status === 400) {
+            throw new Error("Identificador del guía inválido.");
+          }
+          throw new Error("No se pudo cargar el guía.");
+        }
+
+        const data = await response.json();
+        if (!data || Array.isArray(data) || !data.name) {
+          throw new Error("Datos del guía inválidos.");
+        }
+
+        if (!controller.signal.aborted) {
+          setGuia(data);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setError(
+            err instanceof TypeError
+              ? "No se pudo conectar con la API. Verifica que el backend esté encendido."
+              : err instanceof Error
+                ? err.message
+                : "No se pudo cargar el guía.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    cargarGuia();
+
+    return () => controller.abort();
+  }, [reserva.guiaId]);
+
+  function irAlPago() {
+    if (!guia || loading || error) return;
+
+    navigate("/app/pago", {
+      state: {
+        reserva: {
+          ...reserva,
+          guia: guia.name,
+        },
+      },
+    });
+  }
+
+  async function confirmarEnEfectivo() {
+    if (!guia || loading || error || guardando) return;
+
+    setGuardando(true);
     try {
       const data = await saveReservation(reserva, total);
       navigate("/app/reserva-confirmada", {
         state: {
           reserva: {
             ...reserva,
+            guia: guia.name,
             id: data.id,
             idReserva: data.codigo,
             metodoPago: "Efectivo al guía",
@@ -45,18 +119,16 @@ export default function ConfirmReservationPage() {
           },
         },
       });
-    } catch (error) {
+    } catch (err) {
       alert(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "No se pudo conectar con la API. ¿Está encendida?",
       );
+    } finally {
+      setGuardando(false);
     }
-  };
-
-  const irAlPago = () => {
-    navigate("/app/pago", { state: { reserva } });
-  };
+  }
 
   return (
     <div className="confirm-reservation-page">
@@ -83,14 +155,24 @@ export default function ConfirmReservationPage() {
 
         <section className="confirm-reservation-page__section">
           <h2 className="confirm-reservation-page__section-title">Tu guía</h2>
-          <GuideCard
-            nombre={reserva.guia}
-            descripcion="Guía local especializada en historia y cultura de La Paz."
-            ubicacion="La Paz, Bolivia"
-            calificacion={4.9}
-            resenas={120}
-            onVerPerfil={() => navigate(`/app/guias/${reserva.guiaId}`)}
-          />
+          {loading && <p role="status">Cargando información del guía...</p>}
+          {!loading && error && (
+            <div role="alert">
+              <strong>No se pudo cargar el guía</strong>
+              <p>{error}</p>
+            </div>
+          )}
+          {!loading && !error && guia && (
+            <GuideCard
+              foto={guia.avatar}
+              nombre={guia.name}
+              descripcion={guia.description}
+              ubicacion={guia.location}
+              calificacion={Number(guia.rating)}
+              resenas={String(guia.reviews)}
+              onVerPerfil={() => navigate(`/app/guias/${guia.id}`)}
+            />
+          )}
         </section>
 
         <section className="confirm-reservation-page__section">
@@ -106,12 +188,30 @@ export default function ConfirmReservationPage() {
           />
         </section>
 
+        <div className="confirm-reservation-page__policy">
+          <span className="confirm-reservation-page__policy-icon">
+            🛡️
+          </span>
+          <p className="confirm-reservation-page__policy-text">
+            <strong>Cancelación flexible:</strong> Puedes cancelar sin costo
+            hasta 24 horas antes del tour desde tu historial.
+          </p>
+        </div>
+
         <div className="confirm-reservation-page__actions">
-          <Button variant="primary" onClick={irAlPago}>
+          <Button
+            variant="primary"
+            onClick={irAlPago}
+            disabled={loading || Boolean(error) || !guia || guardando}
+          >
             Seleccionar Método de Pago
           </Button>
-          <Button variant="secondary" onClick={confirmarEnEfectivo}>
-            Confirmar y Pagar en Efectivo
+          <Button
+            variant="secondary"
+            onClick={confirmarEnEfectivo}
+            disabled={loading || Boolean(error) || !guia || guardando}
+          >
+            {guardando ? "Guardando reserva..." : "Confirmar y Pagar en Efectivo"}
           </Button>
           <button
             type="button"

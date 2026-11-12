@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar/SearchBar";
@@ -15,128 +16,212 @@ const categories = [
   "Museos",
 ];
 
-const nearbyAttractions = [
-  {
-    id: 4,
-    title: "Teleférico Línea Morada",
-    description: "Cadena de teleféricos para una visión panorámica...",
-    rating: 4.9,
-    reviews: "2.4k",
-    category: "Populares",
-    image:
-      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=300&auto=format&fit=crop",
-  },
-  {
-    id: 5,
-    title: "Mirador Killi Killi",
-    description: "Vistas panorámicas increíbles de la ciudad...",
-    rating: 4.8,
-    reviews: "1.9k",
-    category: "Parques",
-    image:
-      "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=300&auto=format&fit=crop",
-  },
-  {
-    id: 6,
-    title: "Calle de las Brujas",
-    description: "Tradición andina, artesanías y amuletos milenarios...",
-    rating: 4.9,
-    reviews: "2.4k",
-    category: "Históricos",
-    image:
-      "https://images.unsplash.com/photo-1589556264807-12c3f4b5d322?q=80&w=300&auto=format&fit=crop",
-  },
-  {
-    id: 8,
-    title: "Museo Nacional de Arte",
-    description: "Colección colonial y contemporánea en casona barroca...",
-    rating: 4.7,
-    reviews: "950",
-    category: "Museos",
-    image:
-      "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?q=80&w=300&auto=format&fit=crop",
-  },
-];
+// Mensaje claro para problemas de conexión
+const CONNECTION_ERROR =
+  "No se pudo conectar con el servidor. Verifica que la API de TourLocal esté encendida.";
+
+// Función reutilizable para consultar las APIs
+async function fetchApi(url, signal) {
+  let response;
+
+  try {
+    response = await fetch(url, { signal });
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw err;
+    }
+
+    throw new Error(CONNECTION_ERROR);
+  }
+
+  // Leer la respuesta como texto permite manejar
+  // respuestas vacías o errores del proxy de Vite.
+  const text = await response.text();
+
+  let data = null;
+
+  if (text.trim()) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(
+        "El servidor devolvió una respuesta inválida. Verifica que el backend esté funcionando."
+      );
+    }
+  }
+
+  if (!response.ok) {
+    // Si el servidor devuelve JSON con un mensaje,
+    // usamos ese mensaje.
+    if (data && typeof data.error === "string") {
+      throw new Error(data.error);
+    }
+
+    // Error frecuente cuando Vite no encuentra el backend
+    if (response.status >= 500 || response.status === 404) {
+      throw new Error(CONNECTION_ERROR);
+    }
+
+    throw new Error(
+      "No se pudo completar la solicitud."
+    );
+  }
+
+  if (!Array.isArray(data)) {
+    throw new Error(
+      "La API devolvió datos inválidos."
+    );
+  }
+
+  return data;
+}
 
 export default function ExplorePage() {
   const navigate = useNavigate();
+
+  // Estados de interacción
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [savedIds, setSavedIds] = useState([1, 3]);
 
-  // Estados de la API
+  // Estados de destinos destacados
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const toggleSave = (id) => {
+  // Estados de atracciones cercanas
+  const [nearbyAttractions, setNearbyAttractions] = useState([]);
+  const [nearbyLoading, setNearbyLoading] = useState(true);
+  const [nearbyError, setNearbyError] = useState("");
+
+  // Guardar y quitar destinos (estado local)
+  function toggleSave(id) {
     setSavedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
     );
-  };
+  }
 
-  // Carga de datos desde la API
+  // API 1: Obtener destinos destacados
   useEffect(() => {
-    async function loadDestinations() {
-      try {
-        setLoading(true);
-        setError("");
-        const response = await fetch(
-          `/api/destinos?categoria=${encodeURIComponent(selectedCategory)}`
-        );
-        const data = await response.json();
+    const controller = new AbortController();
 
-        if (response.ok) {
+    async function loadDestinations() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = await fetchApi(
+          `/api/destinos?categoria=${encodeURIComponent(selectedCategory)}`,
+          controller.signal
+        );
+
+        if (!controller.signal.aborted) {
           setDestinations(data);
-        } else {
-          setError(data.error || "Error al cargar los destinos");
         }
-      } catch {
-        setError("No se pudo conectar con la API. ¿Está encendida?");
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setError(
+            err.message || CONNECTION_ERROR
+          );
+          setDestinations([]);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     loadDestinations();
+
+    return () => controller.abort();
   }, [selectedCategory]);
 
-  const filteredFeatured = useMemo(() => {
-    return destinations.filter((item) => {
-      const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.location &&
-          item.location.toLowerCase().includes(searchQuery.toLowerCase()));
+  // API 2: Obtener atracciones cercanas
+  useEffect(() => {
+    const controller = new AbortController();
 
-      return matchesSearch;
+    async function loadNearbyAttractions() {
+      setNearbyLoading(true);
+      setNearbyError("");
+
+      try {
+        const data = await fetchApi(
+          "/api/atracciones-cercanas",
+          controller.signal
+        );
+
+        if (!controller.signal.aborted) {
+          setNearbyAttractions(data);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setNearbyError(
+            err.message || CONNECTION_ERROR
+          );
+          setNearbyAttractions([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setNearbyLoading(false);
+        }
+      }
+    }
+
+    loadNearbyAttractions();
+
+    return () => controller.abort();
+  }, []);
+
+  // Filtrar destinos según la búsqueda
+  const filteredFeatured = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+
+    return destinations.filter((item) => {
+      return (
+        (item.title || "").toLowerCase().includes(query) ||
+        (item.location || "").toLowerCase().includes(query)
+      );
     });
   }, [destinations, searchQuery]);
 
+  // Filtrar atracciones según categoría y búsqueda
   const filteredNearby = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+
     return nearbyAttractions.filter((item) => {
       const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.description &&
-          item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+        (item.title || "").toLowerCase().includes(query) ||
+        (item.description || "").toLowerCase().includes(query);
 
-      const matchesCat =
+      const matchesCategory =
         selectedCategory === "Todos" ||
         item.category === selectedCategory ||
-        (selectedCategory === "Populares" && item.rating >= 4.8);
+        (selectedCategory === "Populares" &&
+          item.rating >= 4.8);
 
-      return matchesSearch && matchesCat;
+      return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [nearbyAttractions, searchQuery, selectedCategory]);
 
   return (
     <div className="explore-page">
       <main className="explore-page__content">
-        {/* Cabecera con Saludo, Notificaciones y Perfil */}
+
+        {/* Cabecera */}
         <header className="explore-page__header">
           <div className="explore-page__welcome">
-            <span className="explore-page__greeting">Bienvenida de nuevo,</span>
-            <h1 className="explore-page__user-name">Sofía Martínez</h1>
+            <span className="explore-page__greeting">
+              Bienvenida de nuevo,
+            </span>
+
+            <h1 className="explore-page__user-name">
+              Sofía Martínez
+            </h1>
           </div>
+
           <div className="explore-page__header-actions">
             <button
               type="button"
@@ -144,10 +229,16 @@ export default function ExplorePage() {
               onClick={() => navigate("/notificaciones")}
               aria-label="Ver notificaciones"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
+
               <span className="explore-page__notif-dot" />
             </button>
 
@@ -166,7 +257,7 @@ export default function ExplorePage() {
           </div>
         </header>
 
-        {/* Buscador interactivo */}
+        {/* Buscador */}
         <section className="explore-page__search-section">
           <SearchBar
             value={searchQuery}
@@ -177,7 +268,7 @@ export default function ExplorePage() {
           />
         </section>
 
-        {/* Píldoras de Categorías funcionales */}
+        {/* Categorías */}
         <nav
           className="explore-page__categories"
           aria-label="Categorías de lugares"
@@ -192,30 +283,31 @@ export default function ExplorePage() {
           ))}
         </nav>
 
-        {/* Aviso de carga */}
+        {/* Estado: cargando destinos */}
         {loading && (
           <InfoBox
-            title="Cargando destinos…"
-            text="Obteniendo lugares disponibles desde la API de TourLocal."
+            title="Cargando destinos..."
+            text="Obteniendo los lugares disponibles."
           />
         )}
 
-        {/* Aviso de error */}
-        {error && (
+        {/* Estado: error de destinos */}
+        {!loading && error && (
           <InfoBox
             variant="alert"
-            title="No se pudo cargar"
+            title="No se pudieron cargar los destinos"
             text={error}
           />
         )}
 
-        {/* Sección Lugares Destacados */}
+        {/* Lugares destacados */}
         {!loading && !error && (
           <section className="explore-page__section">
             <div className="explore-page__section-header">
               <h2 className="explore-page__section-title">
                 Lugares Destacados ({filteredFeatured.length})
               </h2>
+
               <button
                 type="button"
                 className="explore-page__see-all"
@@ -238,7 +330,9 @@ export default function ExplorePage() {
                     price={place.price}
                     isSaved={savedIds.includes(place.id)}
                     onSave={() => toggleSave(place.id)}
-                    onClick={() => navigate(`/lugares/${place.id}`)}
+                    onClick={() =>
+                      navigate(`/lugares/${place.id}`)
+                    }
                   />
                 ))}
               </div>
@@ -247,9 +341,11 @@ export default function ExplorePage() {
                 <p className="explore-page__empty-title">
                   No se encontraron lugares en esta categoría
                 </p>
+
                 <p className="explore-page__empty-desc">
                   Intenta con otra categoría o restablece los filtros.
                 </p>
+
                 <button
                   type="button"
                   className="explore-page__reset-btn"
@@ -265,67 +361,126 @@ export default function ExplorePage() {
           </section>
         )}
 
-        {/* Sección Atracciones Cercanas */}
-        {!loading && filteredNearby.length > 0 && (
-          <section className="explore-page__section">
-            <div className="explore-page__section-header">
-              <h2 className="explore-page__section-title">
-                Atracciones Cercanas
-              </h2>
-              <button
-                type="button"
-                className="explore-page__see-all"
-                onClick={() => navigate("/lugares")}
-              >
-                Ver mapa completo
-              </button>
-            </div>
+        {/* Atracciones cercanas */}
+        <section className="explore-page__section">
+          <div className="explore-page__section-header">
+            <h2 className="explore-page__section-title">
+              Atracciones Cercanas
+            </h2>
 
-            <div className="explore-page__nearby-list">
-              {filteredNearby.map((place) => (
-                <article
-                  key={place.id}
-                  className="nearby-card"
-                  onClick={() => navigate(`/lugares/${place.id}`)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      navigate(`/lugares/${place.id}`);
+            <button
+              type="button"
+              className="explore-page__see-all"
+              onClick={() => navigate("/lugares")}
+            >
+              Ver mapa completo
+            </button>
+          </div>
+
+          {/* Estado: cargando atracciones */}
+          {nearbyLoading && (
+            <InfoBox
+              title="Cargando atracciones..."
+              text="Consultando las atracciones cercanas."
+            />
+          )}
+
+          {/* Estado: error de atracciones */}
+          {!nearbyLoading && nearbyError && (
+            <InfoBox
+              variant="alert"
+              title="No se pudieron cargar las atracciones"
+              text={nearbyError}
+            />
+          )}
+
+          {/* Estado: sin resultados */}
+          {!nearbyLoading &&
+            !nearbyError &&
+            filteredNearby.length === 0 && (
+              <div className="explore-page__empty">
+                <p className="explore-page__empty-title">
+                  No se encontraron atracciones
+                </p>
+
+                <p className="explore-page__empty-desc">
+                  Intenta con otra búsqueda o categoría.
+                </p>
+              </div>
+            )}
+
+          {/* Lista de atracciones */}
+          {!nearbyLoading &&
+            !nearbyError &&
+            filteredNearby.length > 0 && (
+              <div className="explore-page__nearby-list">
+                {filteredNearby.map((place) => (
+                  <article
+                    key={place.id}
+                    className="nearby-card"
+                    onClick={() =>
+                      navigate(`/lugares/${place.id}`)
                     }
-                  }}
-                >
-                  <img
-                    src={place.image}
-                    alt={place.title}
-                    className="nearby-card__image"
-                  />
-                  <div className="nearby-card__info">
-                    <h3 className="nearby-card__title">{place.title}</h3>
-                    <p className="nearby-card__desc">{place.description}</p>
-                    <p className="nearby-card__rating">
-                      <span className="nearby-card__star">★</span>
-                      <strong>{place.rating}</strong>
-                      <span>({place.reviews} reseñas)</span>
-                    </p>
-                  </div>
-                  <div className="nearby-card__chevron" aria-hidden="true">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" ||
+                        e.key === " "
+                      ) {
+                        e.preventDefault();
+                        navigate(`/lugares/${place.id}`);
+                      }
+                    }}
+                  >
+                    <img
+                      src={place.image}
+                      alt={place.title}
+                      className="nearby-card__image"
+                    />
+
+                    <div className="nearby-card__info">
+                      <h3 className="nearby-card__title">
+                        {place.title}
+                      </h3>
+
+                      <p className="nearby-card__desc">
+                        {place.description}
+                      </p>
+
+                      <p className="nearby-card__rating">
+                        <span className="nearby-card__star">
+                          ★
+                        </span>
+
+                        <strong>{place.rating}</strong>
+
+                        <span>
+                          ({place.reviews} reseñas)
+                        </span>
+                      </p>
+                    </div>
+
+                    <div
+                      className="nearby-card__chevron"
+                      aria-hidden="true"
                     >
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+        </section>
       </main>
     </div>
   );

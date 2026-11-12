@@ -1,95 +1,103 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import Button from "../components/Button/Button";
+
 import "./CancellationSuccessPage.css";
 
 export default function CancellationSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const reserva = location.state?.reserva || {
-    experiencia: 'Letrero "LA PAZ"',
-    fecha: "Miércoles, 18 de octubre de 2026",
-    horario: "10:00 AM",
-    guia: "María Fernández",
-  };
-
-  const [cancelId] = useState(
-    () => `CAN-${Math.floor(10000 + Math.random() * 90000)}`
-  );
+  const cancelacionExitosa = location.state?.cancelacionExitosa === true;
 
   return (
     <div className="cancellation-success-page">
       <HeaderBar
-        title="Cancelación de Reserva"
+        title="Estado de cancelación"
         showBackButton={true}
-        onBackClick={() => navigate("/app/historial")}
+        onBackClick={() => navigate("/historial")}
       />
 
       <main className="cancellation-success-page__content">
-        {/* Banner de Éxito de Cancelación */}
+
         <section className="cancellation-success-page__banner">
           <div className="cancellation-success-page__icon-wrap">
             <svg
               className="cancellation-success-page__icon"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="var(--color-primary)"
+              stroke="currentColor"
               strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
+              <circle cx="12" cy="12" r="10" />
+              {cancelacionExitosa ? (
+                <polyline points="7 12 10 15 17 8" />
+              ) : (
+                <>
+                  <line x1="12" y1="7" x2="12" y2="13" />
+                  <circle cx="12" cy="17" r="1" />
+                </>
+              )}
             </svg>
           </div>
+
           <h1 className="cancellation-success-page__title">
-            ¡Reserva Cancelada con Éxito!
+            {cancelacionExitosa
+              ? "¡Reserva cancelada!"
+              : "No se encontró una cancelación"}
           </h1>
+
           <p className="cancellation-success-page__subtitle">
-            Tu reserva ha sido dada de baja de tu calendario. Hemos enviado la confirmación a tu correo.
+            {cancelacionExitosa
+              ? "La reserva se canceló correctamente."
+              : "Para cancelar una reserva, inicia la solicitud desde tus reservas. No se realizó ningún cambio."}
           </p>
         </section>
 
-        {/* Resumen del tour cancelado */}
         <section className="cancellation-success-page__card">
           <h2 className="cancellation-success-page__card-title">
-            Detalle de la cancelación
+            Estado de la solicitud
           </h2>
+
           <div className="cancellation-success-page__row">
-            <span className="cancellation-success-page__label">Código:</span>
-            <strong className="cancellation-success-page__value">{cancelId}</strong>
+            <span className="cancellation-success-page__label">
+              Cancelación:
+            </span>
+
+            <strong className="cancellation-success-page__value">
+              {cancelacionExitosa ? "Cancelada" : "No realizada"}
+            </strong>
           </div>
+
           <div className="cancellation-success-page__row">
-            <span className="cancellation-success-page__label">Experiencia:</span>
-            <span className="cancellation-success-page__value">{reserva.experiencia}</span>
-          </div>
-          <div className="cancellation-success-page__row">
-            <span className="cancellation-success-page__label">Fecha prevista:</span>
-            <span className="cancellation-success-page__value">{reserva.fecha}</span>
-          </div>
-          <div className="cancellation-success-page__row">
-            <span className="cancellation-success-page__label">Reembolso:</span>
-            <span className="cancellation-success-page__refund-badge">100% procesado</span>
+            <span className="cancellation-success-page__label">
+              Reembolso:
+            </span>
+
+            <span className="cancellation-success-page__value">
+              {cancelacionExitosa
+                ? "No se procesa automáticamente"
+                : "No solicitado"}
+            </span>
           </div>
         </section>
 
-        {/* Botones de acción */}
         <div className="cancellation-success-page__actions">
           <Button
             variant="primary"
-            onClick={() => navigate("/app/explorar")}
+            onClick={() => navigate("/historial")}
           >
-            Explorar otros destinos
+            Ir a mi historial
           </Button>
 
           <Button
             variant="secondary"
-            onClick={() => navigate("/app/historial")}
+            onClick={() => navigate("/explorar")}
           >
-            Ir a mi Historial
+            Explorar otros destinos
           </Button>
         </div>
       </main>
