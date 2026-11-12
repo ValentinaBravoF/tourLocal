@@ -1,4 +1,4 @@
-import destinations from '../data/destinations.js'
+import db from '../db.js'
 
 const VALID_CATEGORIES = [
   'Todos',
@@ -19,6 +19,22 @@ function normalize(str) {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
+function toDestination(row) {
+  if (!row) return null
+  let guideObj = null
+  if (row.guide) {
+    try {
+      guideObj = typeof row.guide === 'string' ? JSON.parse(row.guide) : row.guide
+    } catch {
+      guideObj = null
+    }
+  }
+  return {
+    ...row,
+    guide: guideObj,
+  }
+}
+
 export function getDestinations(req, res) {
   const category = req.query.categoria || req.query.category || req.query.tipo || 'Todos'
 
@@ -30,36 +46,32 @@ export function getDestinations(req, res) {
 
   const normalizedCategory = normalize(category)
 
+  let rows = []
+
   if (normalizedCategory === 'todos') {
-    return res.json(destinations)
+    rows = db.prepare('SELECT * FROM destinations ORDER BY id ASC').all()
+  } else if (normalizedCategory === 'populares' || normalizedCategory === 'popular') {
+    rows = db.prepare("SELECT * FROM destinations WHERE rating >= 4.8 OR LOWER(category) = 'populares' ORDER BY rating DESC").all()
+  } else {
+    const allRows = db.prepare('SELECT * FROM destinations').all()
+    rows = allRows.filter((r) => normalize(r.category) === normalizedCategory)
   }
 
-  if (normalizedCategory === 'populares' || normalizedCategory === 'popular') {
-    const popularDestinations = destinations.filter(
-      (item) => item.rating >= 4.8 || normalize(item.category) === 'populares'
-    )
-    return res.json(popularDestinations)
-  }
-
-  const filtered = destinations.filter(
-    (item) => normalize(item.category) === normalizedCategory
-  )
-
-  res.json(filtered)
+  res.json(rows.map(toDestination))
 }
 
 export function getDestinationById(req, res) {
   const id = Number(req.params.id)
 
-  if (Number.isNaN(id)) {
-    return res.status(400).json({ error: 'El id debe ser un número' })
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({ error: 'El id debe ser un número entero positivo' })
   }
 
-  const destination = destinations.find((item) => item.id === id)
+  const row = db.prepare('SELECT * FROM destinations WHERE id = ?').get(id)
 
-  if (!destination) {
+  if (!row) {
     return res.status(404).json({ error: 'Destino no encontrado' })
   }
 
-  res.json(destination)
+  res.json(toDestination(row))
 }

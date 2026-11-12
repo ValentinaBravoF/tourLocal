@@ -4,7 +4,7 @@ import schedulesRouter from "./routes/schedules.routes.js";
 import guidesRouter from "./routes/guides.routes.js";
 import guardadosRouter from "./routes/guardados.routes.js";
 import reservationsRouter from "./routes/reservations.routes.js";
-import destinations from "./data/destinations.js";
+import db from "./db.js";
 
 const app = express();
 const PORT = 3000;
@@ -25,22 +25,14 @@ app.use("/api/guias", guidesRouter);
 app.use("/api/guardados", guardadosRouter);
 app.use("/api/reservas", reservationsRouter);
 
-const idsCercanos = [4, 5, 6, 8];
-
-const atraccionesCercanas = destinations
-  .filter((destino) => idsCercanos.includes(destino.id))
-  .map((destino) => ({
-    id: destino.id,
-    title: destino.title,
-    description: destino.description,
-    rating: destino.rating,
-    reviews: destino.reviews,
-    category: destino.category,
-    image: destino.image,
-  }));
-
+// Atracciones cercanas desde la tabla destinations en SQLite (Módulo Esther)
 app.get("/api/atracciones-cercanas", (req, res) => {
-  res.json(atraccionesCercanas);
+  const rows = db
+    .prepare(
+      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id IN (4, 5, 6, 8) ORDER BY id ASC"
+    )
+    .all();
+  res.json(rows);
 });
 
 app.get("/api/atracciones-cercanas/:id", (req, res) => {
@@ -52,9 +44,11 @@ app.get("/api/atracciones-cercanas/:id", (req, res) => {
     });
   }
 
-  const atraccion = atraccionesCercanas.find(
-    (item) => item.id === id
-  );
+  const atraccion = db
+    .prepare(
+      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id = ? AND id IN (4, 5, 6, 8)"
+    )
+    .get(id);
 
   if (!atraccion) {
     return res.status(404).json({

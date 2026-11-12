@@ -1,6 +1,6 @@
-
 import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
+import destinations from "./data/destinations.js";
 import horarios from "./data/horarios.js";
 
 const db = new DatabaseSync(
@@ -96,6 +96,76 @@ if (resultado.total === 0) {
   }
 
   console.log("Se cargaron los horarios iniciales en SQLite");
+}
+
+// ========================================
+// TABLA DE DESTINOS TURÍSTICOS - ESTHER
+// ========================================
+
+// Crear la tabla destinations
+db.exec(`
+  CREATE TABLE IF NOT EXISTS destinations (
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    name TEXT NOT NULL,
+    location TEXT NOT NULL,
+    image TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    duration TEXT,
+    category TEXT NOT NULL,
+    rating REAL NOT NULL,
+    reviews TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price TEXT NOT NULL,
+    guide TEXT
+  )
+`);
+
+// Comprobar si ya existen destinos guardados
+const countDestinos = db
+  .prepare("SELECT COUNT(*) AS total FROM destinations")
+  .get();
+
+// Insertar los destinos iniciales solo si la tabla está vacía
+if (countDestinos.total === 0) {
+  const insertarDestino = db.prepare(`
+    INSERT INTO destinations (
+      id,
+      title,
+      name,
+      location,
+      image,
+      tag,
+      duration,
+      category,
+      rating,
+      reviews,
+      description,
+      price,
+      guide
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const item of destinations) {
+    insertarDestino.run(
+      item.id,
+      item.title,
+      item.name || item.title,
+      item.location,
+      item.image,
+      item.tag || "Pase Libre",
+      item.duration || "",
+      item.category,
+      item.rating,
+      item.reviews,
+      item.description,
+      item.price || "Gratis",
+      JSON.stringify(item.guide || null)
+    );
+  }
+
+  console.log("Se cargaron los destinos iniciales en SQLite (Módulo Esther)");
 }
 
 console.log("Base de datos TourLocal conectada correctamente");
