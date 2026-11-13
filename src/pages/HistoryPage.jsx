@@ -5,7 +5,6 @@ import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
 import Button from "../components/Button/Button";
 import StatusBadge from "../components/StatusBadge/StatusBadge";
 import { formatTourDate, parseTourDateTime } from "../services/reservationDates";
-import destinations from "../data/destinations";
 import imagenPredeterminada from "../assets/hero.png";
 import "./HistoryPage.css";
 
@@ -15,19 +14,6 @@ function normalizarNombre(nombre) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLocaleLowerCase("es");
-}
-
-function obtenerImagenReserva(reserva) {
-  if (reserva.imagen) return reserva.imagen;
-
-  const nombre = normalizarNombre(reserva.experiencia || reserva.nombre);
-  const destino = destinations.find(
-    (item) =>
-      normalizarNombre(item.title) === nombre ||
-      normalizarNombre(item.name) === nombre,
-  );
-
-  return destino?.image || imagenPredeterminada;
 }
 
 function reemplazarImagenRota(event) {
@@ -55,23 +41,44 @@ export default function HistoryPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch("/api/reservas", {
-          signal: controller.signal,
-        });
-        const data = await response.json();
+        const [reservasRes, destinosRes] = await Promise.all([
+          fetch("/api/reservas", { signal: controller.signal }),
+          fetch("/api/destinos", { signal: controller.signal }).catch(() => null),
+        ]);
 
-        if (!response.ok) {
+        const data = await reservasRes.json();
+        let destinosLista = [];
+        if (destinosRes && destinosRes.ok) {
+          try {
+            destinosLista = await destinosRes.json();
+          } catch {
+            destinosLista = [];
+          }
+        }
+
+        if (!reservasRes.ok) {
           throw new Error(data.error || "No se pudieron cargar las reservas.");
         }
         if (!Array.isArray(data)) {
           throw new Error("La API devolvió un historial inválido.");
         }
 
+        function buscarImagen(reserva) {
+          if (reserva.imagen) return reserva.imagen;
+          const nombre = normalizarNombre(reserva.experiencia || reserva.nombre);
+          const destino = destinosLista.find(
+            (item) =>
+              normalizarNombre(item.title) === nombre ||
+              normalizarNombre(item.name) === nombre,
+          );
+          return destino?.image || imagenPredeterminada;
+        }
+
         if (!controller.signal.aborted) {
           setReservas(
             data.map((reserva) => ({
               ...reserva,
-              imagen: obtenerImagenReserva(reserva),
+              imagen: buscarImagen(reserva),
             })),
           );
         }

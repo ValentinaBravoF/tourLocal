@@ -1,6 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 import destinations from "./data/destinations.js";
+import guides from "./data/guides.js";
 import horarios from "./data/horarios.js";
 
 const db = new DatabaseSync(
@@ -166,6 +167,61 @@ if (countDestinos.total === 0) {
   }
 
   console.log("Se cargaron los destinos iniciales en SQLite (Módulo Esther)");
+}
+
+// ========================================
+// TABLA DE GUÍAS TURÍSTICOS - ESTHER
+// ========================================
+
+// Crear la tabla guides
+db.exec(`
+  CREATE TABLE IF NOT EXISTS guides (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    location TEXT NOT NULL,
+    rating REAL NOT NULL,
+    reviews TEXT NOT NULL,
+    avatar TEXT NOT NULL,
+    description TEXT NOT NULL,
+    quote TEXT NOT NULL
+  )
+`);
+
+// Comprobar si ya existen guías guardados
+const countGuias = db
+  .prepare("SELECT COUNT(*) AS total FROM guides")
+  .get();
+
+// Insertar los guías iniciales solo si la tabla está vacía
+if (countGuias.total === 0) {
+  const insertarGuia = db.prepare(`
+    INSERT INTO guides (
+      id,
+      name,
+      location,
+      rating,
+      reviews,
+      avatar,
+      description,
+      quote
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const guide of guides) {
+    insertarGuia.run(
+      guide.id,
+      guide.name,
+      guide.location,
+      guide.rating,
+      guide.reviews,
+      guide.avatar,
+      guide.description,
+      guide.quote
+    );
+  }
+
+  console.log("Se cargaron los guías iniciales en SQLite (Módulo Esther)");
 }
 
 console.log("Base de datos TourLocal conectada correctamente");
