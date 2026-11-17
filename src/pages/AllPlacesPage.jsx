@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import SearchBar from "../components/SearchBar/SearchBar";
@@ -10,113 +10,6 @@ import {
   savePlace,
 } from "../services/savedPlaces";
 import "./AllPlacesPage.css";
-
-const ALL_DESTINATIONS = [
-  {
-    id: 1,
-    title: 'Letrero "LA PAZ"',
-    location: "Murillo, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=400&auto=format&fit=crop",
-    tag: "Pase Libre",
-    duration: "A 40 minutos",
-    priceNumber: 0,
-    category: "Miradores",
-    rating: 4.9,
-    reviews: "2.4k",
-  },
-  {
-    id: 2,
-    title: "Tiwanaku",
-    location: "Ingavi, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1589802829985-817e51171b92?q=80&w=400&auto=format&fit=crop",
-    tag: "Tour Guiado",
-    price: "Bs. 100.00",
-    priceNumber: 100,
-    category: "Históricos",
-    rating: 4.8,
-    reviews: "3.1k",
-  },
-  {
-    id: 3,
-    title: "Valle de la Luna",
-    location: "Mallasa, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop",
-    tag: "Pase Libre",
-    duration: "A 25 minutos",
-    priceNumber: 15,
-    category: "Parques",
-    rating: 4.7,
-    reviews: "1.9k",
-  },
-  {
-    id: 4,
-    title: "Teleférico Línea Morada",
-    location: "El Prado, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=400&auto=format&fit=crop",
-    tag: "Pase Libre",
-    duration: "A 15 minutos",
-    priceNumber: 3,
-    category: "Populares",
-    rating: 4.9,
-    reviews: "2.4k",
-  },
-  {
-    id: 5,
-    title: "Mirador Killi Killi",
-    location: "Villa Pabón, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=400&auto=format&fit=crop",
-    tag: "Pase Libre",
-    duration: "A 20 minutos",
-    priceNumber: 0,
-    category: "Miradores",
-    rating: 4.8,
-    reviews: "1.9k",
-  },
-  {
-    id: 6,
-    title: "Calle de las Brujas",
-    location: "Linares y Sagárnaga, La Paz",
-    image:
-      "https://images.unsplash.com/photo-1589556264807-12c3f4b5d322?w=400&auto=format&fit=crop",
-    tag: "Tour Guiado",
-    price: "Bs. 80.00",
-    priceNumber: 80,
-    category: "Históricos",
-    rating: 4.9,
-    reviews: "2.4k",
-  },
-  {
-    id: 7,
-    title: "Muela del Diablo",
-    location: "Pedregal, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=400&auto=format&fit=crop",
-    tag: "Senderismo",
-    duration: "A 1 hora",
-    priceNumber: 40,
-    category: "Senderismo",
-    rating: 4.6,
-    reviews: "820",
-  },
-  {
-    id: 8,
-    title: "Museo Nacional de Arte",
-    location: "Calle Comercio, La Paz, Bolivia",
-    image:
-      "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?q=80&w=400&auto=format&fit=crop",
-    tag: "Museo",
-    price: "Bs. 20.00",
-    priceNumber: 20,
-    category: "Museos",
-    rating: 4.7,
-    reviews: "950",
-  },
-];
 
 const CATEGORIES = [
   "Todos",
@@ -133,6 +26,8 @@ export default function AllPlacesPage() {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get("categoria") || "Todos";
 
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("populares");
@@ -140,12 +35,46 @@ export default function AllPlacesPage() {
   const [savingIds, setSavingIds] = useState([]);
   const [savedError, setSavedError] = useState("");
 
-  React.useEffect(() => {
+  // 1. Cargar destinos desde la base de datos (SQLite)
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+
+    fetch("/api/destinos", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (!controller.signal.aborted && Array.isArray(data)) {
+          const formateados = data.map((item) => {
+            const match = String(item.price || "").match(/\d+(?:\.\d+)?/);
+            return {
+              ...item,
+              priceNumber: /gratis/i.test(String(item.price))
+                ? 0
+                : match
+                  ? Number(match[0])
+                  : 0,
+            };
+          });
+          setDestinations(formateados);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  // 2. Cargar lugares guardados del usuario
+  useEffect(() => {
     const controller = new AbortController();
 
     getSavedPlaces(controller.signal)
       .then((places) => {
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && Array.isArray(places)) {
           setSavedIds(places.map((place) => place.id));
         }
       })
@@ -174,40 +103,55 @@ export default function AllPlacesPage() {
         );
       }
     } catch (err) {
-      setSavedError(err instanceof Error ? err.message : "No se pudo actualizar el guardado.");
+      setSavedError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo actualizar el guardado.",
+      );
     } finally {
-      setSavingIds((previous) => previous.filter((savingId) => savingId !== id));
+      setSavingIds((previous) =>
+        previous.filter((savingId) => savingId !== id),
+      );
     }
   }
 
   const filteredPlaces = useMemo(() => {
-    return ALL_DESTINATIONS.filter((item) => {
-      const matchesSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.location.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "Todos" ||
-        item.category === selectedCategory ||
-        (selectedCategory === "Populares" && item.rating >= 4.8);
-      return matchesSearch && matchesCategory;
-    }).sort((a, b) => {
-      if (sortBy === "calificacion") return b.rating - a.rating;
-      if (sortBy === "precio-menor") return a.priceNumber - b.priceNumber;
-      return b.rating - a.rating; // Default 'populares'
-    });
-  }, [searchQuery, selectedCategory, sortBy]);
+    return destinations
+      .filter((item) => {
+        const title = (item.title || "").toLowerCase();
+        const location = (item.location || "").toLowerCase();
+        const query = searchQuery.toLowerCase().trim();
+
+        const matchesSearch = title.includes(query) || location.includes(query);
+        const matchesCategory =
+          selectedCategory === "Todos" ||
+          item.category === selectedCategory ||
+          (selectedCategory === "Populares" && Number(item.rating) >= 4.8) ||
+          (selectedCategory === "Miradores" &&
+            (item.category === "Miradores" ||
+              title.includes("mirador") ||
+              title.includes("letrero")));
+
+        return matchesSearch && matchesCategory;
+      })
+      .sort((a, b) => {
+        if (sortBy === "calificacion") return Number(b.rating) - Number(a.rating);
+        if (sortBy === "precio-menor") return a.priceNumber - b.priceNumber;
+        return Number(b.rating) - Number(a.rating);
+      });
+  }, [destinations, searchQuery, selectedCategory, sortBy]);
 
   return (
     <div className="all-places-page">
       <HeaderBar
         title="Todos los Destinos"
         showBackButton={true}
-        onBackClick={() => navigate("/app/explorar")}
+        onBackClick={() => navigate("/explorar")}
       />
 
       <main className="all-places-page__content">
         {savedError && <p role="alert">{savedError}</p>}
-        {/* Barra de búsqueda */}
+
         <section className="all-places-page__search">
           <SearchBar
             value={searchQuery}
@@ -217,7 +161,6 @@ export default function AllPlacesPage() {
           />
         </section>
 
-        {/* Píldoras de Categorías */}
         <nav
           className="all-places-page__categories"
           aria-label="Filtro de categorías"
@@ -232,11 +175,12 @@ export default function AllPlacesPage() {
           ))}
         </nav>
 
-        {/* Barra de resultados y ordenamiento */}
         <div className="all-places-page__meta-bar">
           <span className="all-places-page__count">
             {filteredPlaces.length}{" "}
-            {filteredPlaces.length === 1 ? "lugar encontrado" : "lugares encontrados"}
+            {filteredPlaces.length === 1
+              ? "lugar encontrado"
+              : "lugares encontrados"}
           </span>
           <select
             className="all-places-page__sort"
@@ -250,8 +194,11 @@ export default function AllPlacesPage() {
           </select>
         </div>
 
-        {/* Cuadrícula de Destinos */}
-        {filteredPlaces.length > 0 ? (
+        {loading ? (
+          <div className="all-places-page__empty">
+            <p className="all-places-page__empty-title">Cargando destinos...</p>
+          </div>
+        ) : filteredPlaces.length > 0 ? (
           <div className="all-places-page__grid">
             {filteredPlaces.map((place) => (
               <FeaturedCard
@@ -265,7 +212,7 @@ export default function AllPlacesPage() {
                 isSaved={savedIds.includes(place.id)}
                 onSave={() => toggleSave(place.id)}
                 saveDisabled={savingIds.includes(place.id)}
-                onClick={() => navigate(`/app/lugares/${place.id}`)}
+                onClick={() => navigate(`/lugares/${place.id}`)}
               />
             ))}
           </div>

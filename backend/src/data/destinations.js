@@ -28,7 +28,7 @@ const destinations = [
     name: "Tiwanaku",
     location: "Ingavi, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1589802829985-817e51171b92?q=80&w=600&auto=format&fit=crop",
+      "https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/b00c/live/70bbd1c0-db39-11ee-9507-b7dd55e1aa15.jpg.webp",
     tag: "Tour Guiado",
     duration: "Día completo",
     category: "Históricos",
@@ -51,7 +51,7 @@ const destinations = [
     name: "Valle de la Luna",
     location: "Mallasa, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600&auto=format&fit=crop",
+      "https://www.boliviaentusmanos.com/turismo/imagenes/valle-de-la-luna-1.jpg",
     tag: "Pase Libre",
     duration: "A 25 minutos",
     category: "Parques",
@@ -74,7 +74,7 @@ const destinations = [
     name: "Teleférico Línea Morada",
     location: "Centro / El Alto, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=600&auto=format&fit=crop",
+      "https://jornada.com.bo/wp-content/uploads/2018/08/telef%C3%A9rico-L%C3%ADnea-Morada.jpg",
     tag: "Transporte Turístico",
     duration: "A 15 minutos",
     category: "Populares",
@@ -97,7 +97,7 @@ const destinations = [
     name: "Mirador Killi Killi",
     location: "Villa Pabón, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1526392060635-9d6019884377?q=80&w=600&auto=format&fit=crop",
+      "https://www.laregion.bo/wp-content/uploads/2015/10/MIRADOR-KILLI-KILLI.jpeg",
     tag: "Mirador Panorámico",
     duration: "A 20 minutos",
     category: "Parques",
@@ -120,7 +120,7 @@ const destinations = [
     name: "Calle de las Brujas",
     location: "Linares y Sagárnaga, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1589556264807-12c3f4b5d322?q=80&w=600&auto=format&fit=crop",
+      "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1b/32/e5/20/mercado-de-las-brujas.jpg?w=1200&h=-1&s=1",
     tag: "Cultura y Tradición",
     duration: "A 10 minutos",
     category: "Históricos",
@@ -143,7 +143,7 @@ const destinations = [
     name: "Muela del Diablo",
     location: "Pedregal, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=600&auto=format&fit=crop",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1YyrbaBzo3nxuoAy-rOrjIoTS72eeytF_bbW7SkjqmjJkgbzv8BDpGHA&s=10",
     tag: "Senderismo",
     duration: "A 1 hora",
     category: "Senderismo",
@@ -166,7 +166,7 @@ const destinations = [
     name: "Museo Nacional de Arte",
     location: "Calle Comercio y Socabaya, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?q=80&w=600&auto=format&fit=crop",
+      "https://www.opinion.com.bo/asset/thumbnail,992,558,center,center/media/opinion/images/2024/07/08/2024070822223615369.jpg",
     tag: "Museo de Arte",
     duration: "A 15 minutos",
     category: "Museos",
