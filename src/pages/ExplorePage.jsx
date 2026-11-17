@@ -6,6 +6,7 @@ import CategoryPill from "../components/CategoryPill/CategoryPill";
 import FeaturedCard from "../components/FeaturedCard/FeaturedCard";
 import InfoBox from "../components/InfoBox/InfoBox";
 import { getCurrentUser } from "../services/userService";
+import useReservas from "../hooks/useReservas";
 import {
   getSavedPlaces,
   removeSavedPlace,
@@ -86,6 +87,7 @@ export default function ExplorePage() {
   const navigate = useNavigate();
   const usuario = getCurrentUser();
   const nombreUsuario = usuario?.nombre?.trim() || "Viajero";
+  const { reservas } = useReservas();
 
   // Estados de interacción
   const [selectedCategory, setSelectedCategory] = useState("Todos");
@@ -280,7 +282,7 @@ export default function ExplorePage() {
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
 
-              <span className="explore-page__notif-dot" />
+              {reservas.length > 0 && <span className="explore-page__notif-dot" />}
             </button>
 
             <button

@@ -166,7 +166,7 @@
 
 .history-page__action {
   position: fixed;
-  bottom: 64px; /* para que aparezca encima delNavBar */
+  bottom: 64px;
   left: 0;
   right: 0;
   width: 100%;
