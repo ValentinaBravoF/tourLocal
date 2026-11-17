@@ -4,6 +4,7 @@ import ExperienceSummary from "../components/ExperienceSummary/ExperienceSummary
 import ReservationDetailCard from "../components/ReservationDetailCard/ReservationDetailCard";
 import PriceSummary from "../components/PriceSummary/PriceSummary";
 import Button from "../components/Button/Button";
+import GuideCard from "../components/GuideCard/GuideCard"; // ¡Faltaba importar GuideCard!
 import {
   formatTourDate,
   parseTourDateTime,
@@ -19,46 +20,68 @@ export default function ExperienceDetailPage() {
   const [error, setError] = useState("");
   const [ahora] = useState(() => new Date());
 
+  // Nuevos estados para cargar dinámicamente la imagen y el guía
+  const [destinos, setDestinos] = useState([]);
+  const [guiaData, setGuiaData] = useState(null);
+
   useEffect(() => {
     const controller = new AbortController();
 
-    async function cargarReserva() {
+    async function cargarDatos() {
       setLoading(true);
       setError("");
       setReserva(null);
 
       try {
-        const response = await fetch(`/api/reservas/${id}`, {
+        // 1. Cargamos la reserva
+        const resReserva = await fetch(`/api/reservas/${id}`, {
           headers: getUserHeaders(),
           signal: controller.signal,
         });
 
-        if (!response.ok) {
-          if (response.status === 400) {
-            throw new Error("El ID de la reserva no es válido.");
-          }
-          if (response.status === 404) {
-            throw new Error("Reserva no encontrada.");
-          }
+        if (!resReserva.ok) {
           throw new Error("No se pudo obtener la información de la reserva.");
         }
+        const dataReserva = await resReserva.json();
+        
+        // 2. Cargamos TODOS los destinos (para buscar la imagen correcta)
+        const resDestinos = await fetch(`/api/destinos`, {
+          signal: controller.signal,
+        });
+        
+        let listaDestinos = [];
+        if (resDestinos.ok) {
+           listaDestinos = await resDestinos.json();
+           setDestinos(listaDestinos);
+        }
 
-        const data = await response.json();
-        if (!data || typeof data !== "object" || Array.isArray(data)) {
-          throw new Error("Los datos de la reserva no son válidos.");
+        // 3. Cargamos el guía si tenemos el ID
+        if (dataReserva.guiaId) {
+            const resGuia = await fetch(`/api/guias/${dataReserva.guiaId}`, {
+                signal: controller.signal,
+            });
+            if (resGuia.ok) {
+                setGuiaData(await resGuia.json());
+            }
+        } else if (dataReserva.guia) {
+            // Fallback: si no hay ID pero hay nombre, buscamos en la lista general de guías
+            const resGuiasAll = await fetch(`/api/guias`, { signal: controller.signal });
+            if (resGuiasAll.ok) {
+                const todosLosGuias = await resGuiasAll.json();
+                const guiaEncontrado = todosLosGuias.find(g => g.name === dataReserva.guia);
+                if (guiaEncontrado) setGuiaData(guiaEncontrado);
+            }
         }
 
         if (!controller.signal.aborted) {
-          setReserva(data);
+          setReserva(dataReserva);
         }
       } catch (err) {
         if (!controller.signal.aborted) {
           setError(
-            err instanceof TypeError || err instanceof SyntaxError
-              ? "No se pudo conectar con la API. Verifica que el backend esté encendido."
-              : err instanceof Error
-                ? err.message
-                : "No se pudo cargar la reserva.",
+            err instanceof Error
+              ? err.message
+              : "No se pudo cargar la reserva."
           );
         }
       } finally {
@@ -68,7 +91,7 @@ export default function ExperienceDetailPage() {
       }
     }
 
-    cargarReserva();
+    cargarDatos();
     return () => controller.abort();
   }, [id]);
 
@@ -76,6 +99,7 @@ export default function ExperienceDetailPage() {
     navigate("/historial");
   }
 
+  // --- Lógica de estado de la reserva ---
   const fechaTour = reserva
     ? parseTourDateTime(reserva.fecha, reserva.horario)
     : null;
@@ -103,14 +127,23 @@ export default function ExperienceDetailPage() {
       : puedeCancelar
         ? "Puedes cancelar esta reserva antes de que comience el tour."
         : "Revisa los datos de fecha y hora de esta reserva.";
+  
   const participantes = Number(reserva?.participantes) || 1;
   const precioPorPersona = Number(reserva?.precioPorPersona);
   const tarifaServicio = Number(reserva?.tarifaServicio) || 0;
-  const total =
-    reserva?.total == null ? Number.NaN : Number(reserva.total);
-  const tienePrecio =
-    Number.isFinite(total) ||
-    (Number.isFinite(precioPorPersona) && precioPorPersona > 0);
+  const total = reserva?.total == null ? Number.NaN : Number(reserva.total);
+  const tienePrecio = Number.isFinite(total) || (Number.isFinite(precioPorPersona) && precioPorPersona > 0);
+
+  // --- Lógica para buscar la imagen correcta ---
+  // Buscamos el destino en la lista que coincida con el nombre de la reserva
+  const destinoEncontrado = destinos.find(d => 
+      d.title === reserva?.experiencia || 
+      d.name === reserva?.experiencia || 
+      d.title === reserva?.nombre
+  );
+  
+  // Usamos la imagen de la BD, o un fallback genérico si no se encuentra
+  const imagenMostrar = reserva?.imagen || destinoEncontrado?.image || "https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop";
 
   return (
     <div className="experience-detail-page">
@@ -156,11 +189,11 @@ export default function ExperienceDetailPage() {
             <section className="experience-detail-page__section">
               <ExperienceSummary
                 destino={reserva.experiencia || reserva.nombre}
-                imagen={reserva.imagen}
-                ubicacion={reserva.ubicacion || "La Paz, Bolivia"}
-                categoria={reserva.categoria || "EXPERIENCIA"}
-                calificacion={reserva.calificacion || "4.9"}
-                resenas={reserva.resenas || "248 reseñas"}
+                imagen={imagenMostrar} // Aquí pasamos la imagen correcta
+                ubicacion={reserva.ubicacion || destinoEncontrado?.location || "La Paz, Bolivia"}
+                categoria={reserva.categoria || destinoEncontrado?.category || "EXPERIENCIA"}
+                calificacion={reserva.calificacion || destinoEncontrado?.rating || "4.9"}
+                resenas={reserva.resenas || destinoEncontrado?.reviews || "248 reseñas"}
                 estado={esPasada ? "realizada" : reserva.estado}
               />
             </section>
@@ -171,7 +204,7 @@ export default function ExperienceDetailPage() {
                 fecha={formatTourDate(reserva.fecha)}
                 horario={reserva.horario || "No registrado"}
                 participantes={`${participantes} personas`}
-                ubicacion={reserva.ubicacion || "La Paz, Bolivia"}
+                ubicacion={reserva.ubicacion || destinoEncontrado?.location || "La Paz, Bolivia"}
                 notas={reserva.notas}
                 estado={
                   reserva.estado === "cancelada" ? "cancelacion" : "normal"
@@ -179,22 +212,34 @@ export default function ExperienceDetailPage() {
               />
             </section>
 
-            {reserva.guia && (
-              <section className="experience-detail-page__section">
-                <h2 className="experience-detail-page__section-title">
-                  Tu guía
-                </h2>
-                <p>{reserva.guia}</p>
-                {reserva.guiaId && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => navigate(`/app/guias/${reserva.guiaId}`)}
-                  >
-                    Ver perfil del guía
-                  </Button>
-                )}
-              </section>
-            )}
+            {/* SECCIÓN DEL GUÍA ACTUALIZADA */}
+            <section className="experience-detail-page__section">
+              <h2 className="experience-detail-page__section-title">
+                Tu guía asignado
+              </h2>
+              {guiaData ? (
+                 <GuideCard
+                 foto={guiaData.avatar}
+                 nombre={guiaData.name}
+                 descripcion={guiaData.description}
+                 calificacion={String(guiaData.rating)}
+                 resenas={String(guiaData.reviews)}
+                 onVerPerfil={() => navigate(`/app/guias/${guiaData.id}`)}
+               />
+              ) : (
+                <div style={{ padding: "12px", border: "1px solid #eae6e1", borderRadius: "12px" }}>
+                    <p style={{ margin: "0 0 8px 0", fontWeight: "bold" }}>{reserva.guia || "Guía Local"}</p>
+                    {reserva.guiaId && (
+                    <Button
+                        variant="secondary"
+                        onClick={() => navigate(`/app/guias/${reserva.guiaId}`)}
+                    >
+                        Ver perfil del guía
+                    </Button>
+                    )}
+                </div>
+              )}
+            </section>
 
             {tienePrecio && (
               <section className="experience-detail-page__section">

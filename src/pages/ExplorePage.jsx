@@ -89,6 +89,10 @@ export default function ExplorePage() {
   const nombreUsuario = usuario?.nombre?.trim() || "Viajero";
   const { reservas } = useReservas();
 
+  // Verificamos si hay alguna notificación que el usuario no haya leído
+  const leidas = JSON.parse(localStorage.getItem("tourlocal_notifs_leidas") || "[]");
+  const hayNotifsSinLeer = reservas.some((r, idx) => !leidas.includes(`res-${r.codigo || r.id || idx}`)) || !leidas.includes("guide-diego");
+
   // Estados de interacción
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
@@ -282,7 +286,7 @@ export default function ExplorePage() {
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
 
-              {reservas.length > 0 && <span className="explore-page__notif-dot" />}
+              {hayNotifsSinLeer && <span className="explore-page__notif-dot" />}
             </button>
 
             <button

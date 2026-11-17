@@ -5,7 +5,7 @@ const destinations = [
     name: 'Letrero "LA PAZ"',
     location: "Murillo, La Paz, Bolivia",
     image:
-      "https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=600&auto=format&fit=crop",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLtfPFh9Ub87pLOX22BWaaHUwLqOi81sFwqN4q9kns8DAHPhydZ0cXBdRj&s=10",
     tag: "Pase Libre",
     duration: "A 40 minutos",
     category: "Parques",
