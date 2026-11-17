@@ -1,6 +1,6 @@
 
 .schedule-page {
-  min-height: 100vh;
+  min-height: calc(100vh - 70px);
   display: flex;
   flex-direction: column;
   background-color: var(--color-background);

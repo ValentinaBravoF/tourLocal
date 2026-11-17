@@ -19,7 +19,7 @@ const destinations = [
       ubicacion: "La Paz, Bolivia",
       calificacion: "4.9",
       resenas: "180",
-      foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop",
+      foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop",
     },
   },
   {
@@ -42,7 +42,7 @@ const destinations = [
       ubicacion: "La Paz, Bolivia",
       calificacion: "4.8",
       resenas: "320",
-      foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop",
+      foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop",
     },
   },
   {
@@ -88,7 +88,7 @@ const destinations = [
       ubicacion: "La Paz, Bolivia",
       calificacion: "4.9",
       resenas: "180",
-      foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop",
+      foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop",
     },
   },
   {
@@ -111,7 +111,7 @@ const destinations = [
       ubicacion: "La Paz, Bolivia",
       calificacion: "4.8",
       resenas: "320",
-      foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop",
+      foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop",
     },
   },
   {
@@ -134,7 +134,7 @@ const destinations = [
       ubicacion: "La Paz, Bolivia",
       calificacion: "4.9",
       resenas: "320",
-      foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop",
+      foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop",
     },
   },
   {

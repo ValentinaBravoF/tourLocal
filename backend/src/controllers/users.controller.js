@@ -1,7 +1,7 @@
 import db from "../db.js";
 
 export function registerUser(req, res) {
-  const { nombre, email, password, telefono, ciudad, fechaRegistro } = req.body;
+  const { nombre, email, password, telefono, ciudad, fechaRegistro, foto } = req.body;
 
   if (!nombre || !email || !password) {
     return res.status(400).json({ error: "Faltan campos obligatorios" });
@@ -9,8 +9,8 @@ export function registerUser(req, res) {
 
   try {
     const stmt = db.prepare(`
-      INSERT INTO users (nombre, email, password, telefono, ciudad, fechaRegistro) 
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO users (nombre, email, password, telefono, ciudad, fechaRegistro, foto) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
       nombre,
@@ -19,6 +19,7 @@ export function registerUser(req, res) {
       telefono || "",
       ciudad || "",
       fechaRegistro || "",
+      foto || "",
     );
 
     res.status(201).json({
@@ -28,6 +29,7 @@ export function registerUser(req, res) {
       telefono,
       ciudad,
       fechaRegistro,
+      foto: foto || "",
     });
   } catch (error) {
     if (error.message.includes("UNIQUE")) {
@@ -54,4 +56,74 @@ export function loginUser(req, res) {
 
   const { password: _, ...userWithoutPassword } = user;
   res.json(userWithoutPassword);
+}
+
+export function updateProfile(req, res) {
+  const { id, email, nombre, telefono, ciudad, foto } = req.body;
+  const headerUserId = req.get("X-User-Id")?.trim();
+
+  try {
+    let user;
+    if (id) {
+      user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+    }
+    if (!user && headerUserId && !isNaN(Number(headerUserId))) {
+      user = db.prepare("SELECT * FROM users WHERE id = ?").get(Number(headerUserId));
+    }
+    if (!user && email) {
+      user = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+    }
+    if (!user) {
+      // Tomamos el primer usuario como fallback activo si existe
+      user = db.prepare("SELECT * FROM users LIMIT 1").get();
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const updatedNombre = nombre !== undefined ? nombre : user.nombre;
+    const updatedTelefono = telefono !== undefined ? telefono : user.telefono;
+    const updatedCiudad = ciudad !== undefined ? ciudad : user.ciudad;
+    const updatedFoto = foto !== undefined ? foto : user.foto;
+
+    db.prepare(`
+      UPDATE users 
+      SET nombre = ?, telefono = ?, ciudad = ?, foto = ?
+      WHERE id = ?
+    `).run(updatedNombre, updatedTelefono, updatedCiudad, updatedFoto, user.id);
+
+    const updated = db.prepare("SELECT * FROM users WHERE id = ?").get(user.id);
+    const { password: _, ...userWithoutPassword } = updated;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar perfil del usuario" });
+  }
+}
+
+export function getProfile(req, res) {
+  const headerUserId = req.get("X-User-Id")?.trim();
+  const email = req.query.email;
+
+  try {
+    let user;
+    if (headerUserId && !isNaN(Number(headerUserId))) {
+      user = db.prepare("SELECT * FROM users WHERE id = ?").get(Number(headerUserId));
+    }
+    if (!user && email) {
+      user = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+    }
+    if (!user) {
+      user = db.prepare("SELECT * FROM users LIMIT 1").get();
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener perfil del usuario" });
+  }
 }

@@ -6,6 +6,13 @@ import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
 import Button from "../components/Button/Button";
 import "./GuideProfilePage.css";
 
+const GUIDE_CONTACTS = {
+  "Diego Ramos": { phone: "+591 76543210", email: "diego.ramos@tourlocal.bo" },
+  "Carlos Condori": { phone: "+591 71234567", email: "carlos.condori@tourlocal.bo" },
+  "María Fernández": { phone: "+591 72345678", email: "maria.fernandez@tourlocal.bo" },
+  "Elena Choque": { phone: "+591 73456789", email: "elena.choque@tourlocal.bo" },
+};
+
 export default function GuideProfilePage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -14,6 +21,9 @@ export default function GuideProfilePage() {
   const [experiencias, setExperiencias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [chatMessage, setChatMessage] = useState("");
+  const [mensajeEnviado, setMensajeEnviado] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -62,6 +72,24 @@ export default function GuideProfilePage() {
     cargarDatos();
     return () => controller.abort();
   }, [id]);
+
+  const contactInfo = guide
+    ? GUIDE_CONTACTS[guide.name] || {
+        phone: "+591 76543210",
+        email: `${guide.name.toLowerCase().replace(/\s+/g, ".")}@tourlocal.bo`,
+      }
+    : null;
+
+  const handleEnviarMensaje = (e) => {
+    e.preventDefault();
+    if (!chatMessage.trim()) return;
+    setMensajeEnviado(true);
+    setChatMessage("");
+    setTimeout(() => {
+      setMensajeEnviado(false);
+      setShowContactModal(false);
+    }, 2500);
+  };
 
   return (
     <div className="guide-profile-page">
@@ -147,9 +175,105 @@ export default function GuideProfilePage() {
               )}
             </section>
 
-            <Button variant="primary" onClick={() => navigate("/agendar/1")}>
+            <Button variant="primary" onClick={() => setShowContactModal(true)}>
               Contactar al guía
             </Button>
+
+            {showContactModal && (
+              <div
+                className="guide-modal__backdrop"
+                onClick={() => setShowContactModal(false)}
+              >
+                <div
+                  className="guide-modal__content"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="guide-modal__header">
+                    <h3>Contactar a {guide.name}</h3>
+                    <button
+                      type="button"
+                      className="guide-modal__close"
+                      onClick={() => setShowContactModal(false)}
+                      aria-label="Cerrar modal"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <p className="guide-modal__desc">
+                    Elige el medio por el cual deseas comunicarte directamente con el guía:
+                  </p>
+
+                  <div className="guide-modal__options">
+                    <a
+                      href={`https://wa.me/${contactInfo.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                        `Hola ${guide.name}, te contacto desde TourLocal para realizar una consulta sobre tus recorridos.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="guide-modal__option guide-modal__option--whatsapp"
+                    >
+                      <span className="guide-modal__option-icon">💬</span>
+                      <div>
+                        <strong>WhatsApp</strong>
+                        <span>{contactInfo.phone}</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={`tel:${contactInfo.phone}`}
+                      className="guide-modal__option"
+                    >
+                      <span className="guide-modal__option-icon">📞</span>
+                      <div>
+                        <strong>Llamada directa</strong>
+                        <span>{contactInfo.phone}</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href={`mailto:${contactInfo.email}?subject=Consulta%20TourLocal`}
+                      className="guide-modal__option"
+                    >
+                      <span className="guide-modal__option-icon">✉️</span>
+                      <div>
+                        <strong>Correo electrónico</strong>
+                        <span>{contactInfo.email}</span>
+                      </div>
+                    </a>
+                  </div>
+
+                  <hr className="guide-modal__divider" />
+
+                  <form onSubmit={handleEnviarMensaje} className="guide-modal__chat-form">
+                    <label htmlFor="chat-message" className="guide-modal__chat-label">
+                      O envíale un mensaje rápido ahora mismo:
+                    </label>
+                    <textarea
+                      id="chat-message"
+                      className="guide-modal__textarea"
+                      rows={3}
+                      placeholder={`Hola ${guide.name}, quisiera saber más detalles sobre el punto de encuentro...`}
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                    />
+                    {mensajeEnviado && (
+                      <div className="guide-modal__success" role="status">
+                        ✓ ¡Mensaje enviado a {guide.name}! Te responderá a la brevedad.
+                      </div>
+                    )}
+                    <div className="guide-modal__actions">
+                      <Button variant="primary" type="submit" disabled={!chatMessage.trim() || mensajeEnviado}>
+                        Enviar mensaje
+                      </Button>
+                      <Button variant="secondary" type="button" onClick={() => setShowContactModal(false)}>
+                        Cerrar
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

@@ -67,7 +67,7 @@ export function logout() {
   localStorage.removeItem(CURRENT_USER_KEY);
 }
 
-export function updateUser(updatedUser) {
+export async function updateUser(updatedUser) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
     throw new Error("No hay un usuario activo para actualizar.");
@@ -80,4 +80,31 @@ export function updateUser(updatedUser) {
 
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
   setCurrentUser(mergedUser);
+
+  try {
+    const res = await fetch("/api/users/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...getUserHeaders(),
+      },
+      body: JSON.stringify({
+        id: mergedUser.id,
+        email: mergedUser.email,
+        nombre: mergedUser.nombre,
+        telefono: mergedUser.telefono,
+        ciudad: mergedUser.ciudad,
+        foto: mergedUser.foto,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setCurrentUser({ ...mergedUser, ...data });
+    }
+  } catch {
+    // Si la API no está disponible, los datos ya están resguardados en localStorage
+  }
+
+  return mergedUser;
 }

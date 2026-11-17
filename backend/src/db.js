@@ -75,7 +75,8 @@ db.exec(`
     password TEXT NOT NULL,
     telefono TEXT,
     ciudad TEXT,
-    fechaRegistro TEXT
+    fechaRegistro TEXT,
+    foto TEXT
   )
 `);
 let userColumns = db.prepare("PRAGMA table_info(users)").all();
@@ -92,10 +93,26 @@ userColumns = db.prepare("PRAGMA table_info(users)").all();
 const migratedUserColumnNames = new Set(
   userColumns.map((column) => column.name),
 );
-for (const column of ["telefono", "ciudad", "fechaRegistro"]) {
+for (const column of ["telefono", "ciudad", "fechaRegistro", "foto"]) {
   if (!migratedUserColumnNames.has(column)) {
     db.exec(`ALTER TABLE users ADD COLUMN ${column} TEXT`);
   }
+}
+
+const countUsers = db.prepare("SELECT COUNT(*) AS total FROM users").get();
+if (countUsers.total === 0) {
+  db.prepare(`
+    INSERT INTO users (nombre, email, password, telefono, ciudad, fechaRegistro, foto)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    "Sofía Martínez",
+    "sofia.martinez@gmail.com",
+    "supersecret123",
+    "+591 76543210",
+    "La Paz, Bolivia",
+    "Octubre 2026",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
+  );
 }
 
 // ========================================
@@ -263,6 +280,27 @@ if (countGuias.total === 0) {
   }
 
   console.log("Se cargaron los guías iniciales en SQLite (Módulo Esther)");
+}
+
+// Sincronizar avatars actualizados para Diego Ramos y Carlos Condori
+try {
+  db.prepare(
+    "UPDATE guides SET avatar = ? WHERE name = 'Diego Ramos'"
+  ).run("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop");
+  db.prepare(
+    "UPDATE guides SET avatar = ? WHERE name = 'Carlos Condori'"
+  ).run("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop");
+
+  for (const item of destinations) {
+    if (item.guide) {
+      db.prepare("UPDATE destinations SET guide = ? WHERE id = ?").run(
+        JSON.stringify(item.guide),
+        item.id,
+      );
+    }
+  }
+} catch {
+  // Ignorar si hay algún problema de sincronización inicial
 }
 
 console.log("Base de datos TourLocal conectada correctamente");

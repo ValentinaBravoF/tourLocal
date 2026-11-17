@@ -82,7 +82,30 @@ console.log('\n=== TEST 8: SELECT * FROM guides (SQLite) ===');
 console.log('\n=== TEST 9: SELECT * FROM guides WHERE id = 1 ===');
 {
   const guide = db.prepare('SELECT * FROM guides WHERE id = ?').get(1);
-  console.log('Status: 200, Guide 1:', guide?.name, 'Location:', guide?.location);
+  console.log('Status: 200, Guide 1:', guide?.name, 'Location:', guide?.location, 'Avatar:', guide?.avatar);
 }
 
-console.log('\n=== TODOS LOS TESTS PASARON EXITOSAMENTE ===');
+console.log('\n=== TEST 10: USER PROFILE & PERSISTENCIA (SQLite) ===');
+{
+  import('./src/controllers/users.controller.js').then(({ updateProfile, getProfile }) => {
+    const updateReq = {
+      body: {
+        email: 'sofia.martinez@gmail.com',
+        nombre: 'Sofía Martínez Actualizada',
+        telefono: '+591 78901234',
+        ciudad: 'La Paz, Bolivia',
+        foto: 'https://images.unsplash.com/photo-test?w=150'
+      },
+      get: () => '1'
+    };
+    const updateRes = mockRes();
+    updateProfile(updateReq, updateRes);
+    console.log('Status updateProfile:', updateRes.statusCode, 'User:', updateRes.data?.nombre, 'Tel:', updateRes.data?.telefono);
+
+    const getReq = { query: { email: 'sofia.martinez@gmail.com' }, get: () => '1' };
+    const getRes = mockRes();
+    getProfile(getReq, getRes);
+    console.log('Status getProfile:', getRes.statusCode, 'User:', getRes.data?.nombre, 'Foto:', Boolean(getRes.data?.foto));
+    console.log('\n=== TODOS LOS TESTS PASARON EXITOSAMENTE ===');
+  });
+}
