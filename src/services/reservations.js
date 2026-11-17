@@ -1,7 +1,12 @@
+import { getUserHeaders } from "./userService";
+
 export async function saveReservation(reserva, total) {
   const response = await fetch("/api/reservas", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...getUserHeaders(),
+    },
     body: JSON.stringify({
       experiencia: reserva.experiencia,
       fecha: reserva.fecha,

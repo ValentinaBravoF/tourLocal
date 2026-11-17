@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 export default function useApi(url) {
@@ -9,7 +8,7 @@ export default function useApi(url) {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function cargarDatos() {
+    async function load() {
       setLoading(true);
       setError("");
 
@@ -19,34 +18,34 @@ export default function useApi(url) {
         });
 
         if (!response.ok) {
-          let mensaje = "No se pudieron cargar los datos.";
+          let message = "No se pudieron cargar los datos.";
 
           try {
-            const respuesta = await response.json();
-            mensaje = respuesta.error || mensaje;
+            const result = await response.json();
+            message = result.error || message;
           } catch {
-            // La respuesta puede no contener JSON
+            // Some error responses may not include JSON.
           }
 
-          throw new Error(mensaje);
+          throw new Error(message);
         }
 
-        const resultado = await response.json();
-
+        const result = await response.json();
         if (!controller.signal.aborted) {
-          setData(resultado);
+          setData(result);
         }
       } catch (err) {
         if (!controller.signal.aborted) {
-          setError(
-            err instanceof TypeError || err instanceof SyntaxError
-              ? "No se pudo conectar con la API. Verifica que el backend esté encendido."
-              : err instanceof Error
-                ? err.message
-                : "Ocurrió un error al cargar los datos."
-          );
-
           setData(null);
+          setError(
+            err instanceof TypeError
+              ? "No se pudo conectar con la API. Verifica que el backend esté encendido."
+              : err instanceof SyntaxError
+                ? "La API devolvió una respuesta inválida."
+                : err instanceof Error
+                  ? err.message
+                  : "Ocurrió un error al cargar los datos.",
+          );
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -55,8 +54,7 @@ export default function useApi(url) {
       }
     }
 
-    cargarDatos();
-
+    load();
     return () => controller.abort();
   }, [url]);
 

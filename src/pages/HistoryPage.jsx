@@ -1,12 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
 import Button from "../components/Button/Button";
 import StatusBadge from "../components/StatusBadge/StatusBadge";
-import { formatTourDate, parseTourDateTime } from "../services/reservationDates";
+import useReservas from "../hooks/useReservas";
+import useApi from "../hooks/useApi";
+import {
+  formatTourDate,
+  parseTourDateTime,
+} from "../services/reservationDates";
 import imagenPredeterminada from "../assets/hero.png";
 import "./HistoryPage.css";
+
+const destinosVacios = [];
 
 function normalizarNombre(nombre) {
   return String(nombre || "")
@@ -14,6 +21,19 @@ function normalizarNombre(nombre) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLocaleLowerCase("es");
+}
+
+function obtenerImagenReserva(reserva, destinos) {
+  if (reserva.imagen) return reserva.imagen;
+
+  const nombre = normalizarNombre(reserva.experiencia || reserva.nombre);
+  const destino = destinos.find(
+    (item) =>
+      normalizarNombre(item.title) === nombre ||
+      normalizarNombre(item.name) === nombre,
+  );
+
+  return destino?.image || imagenPredeterminada;
 }
 
 function reemplazarImagenRota(event) {
@@ -27,81 +47,20 @@ export default function HistoryPage() {
   const [activeTab, setActiveTab] = useState(
     location.state?.tab === "past" ? "past" : "upcoming",
   );
-  const [reservas, setReservas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { reservas: reservasCargadas, loading, error } = useReservas();
+  const { data: destinosData } = useApi("/api/destinos");
+  const destinos = Array.isArray(destinosData) ? destinosData : destinosVacios;
   const [ahora] = useState(() => new Date());
   const nuevaReserva = location.state?.reserva;
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function cargarReservas() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const [reservasRes, destinosRes] = await Promise.all([
-          fetch("/api/reservas", { signal: controller.signal }),
-          fetch("/api/destinos", { signal: controller.signal }).catch(() => null),
-        ]);
-
-        const data = await reservasRes.json();
-        let destinosLista = [];
-        if (destinosRes && destinosRes.ok) {
-          try {
-            destinosLista = await destinosRes.json();
-          } catch {
-            destinosLista = [];
-          }
-        }
-
-        if (!reservasRes.ok) {
-          throw new Error(data.error || "No se pudieron cargar las reservas.");
-        }
-        if (!Array.isArray(data)) {
-          throw new Error("La API devolvió un historial inválido.");
-        }
-
-        function buscarImagen(reserva) {
-          if (reserva.imagen) return reserva.imagen;
-          const nombre = normalizarNombre(reserva.experiencia || reserva.nombre);
-          const destino = destinosLista.find(
-            (item) =>
-              normalizarNombre(item.title) === nombre ||
-              normalizarNombre(item.name) === nombre,
-          );
-          return destino?.image || imagenPredeterminada;
-        }
-
-        if (!controller.signal.aborted) {
-          setReservas(
-            data.map((reserva) => ({
-              ...reserva,
-              imagen: buscarImagen(reserva),
-            })),
-          );
-        }
-      } catch (err) {
-        if (!controller.signal.aborted) {
-          setError(
-            err instanceof TypeError || err instanceof SyntaxError
-              ? "No se pudo conectar con la API de reservas. Verifica que esté encendida."
-              : err instanceof Error
-                ? err.message
-                : "No se pudieron cargar las reservas.",
-          );
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    cargarReservas();
-    return () => controller.abort();
-  }, []);
+  const reservas = useMemo(
+    () =>
+      reservasCargadas.map((reserva) => ({
+        ...reserva,
+        imagen: obtenerImagenReserva(reserva, destinos),
+      })),
+    [reservasCargadas, destinos],
+  );
 
   const { upcomingList, pastExperiences } = useMemo(() => {
     const próximas = [];
@@ -150,7 +109,9 @@ export default function HistoryPage() {
           horario: nuevaReserva.horario || "Horario por confirmar",
           participantes: nuevaReserva.participantes ?? 2,
           estado: nuevaReserva.estado || "confirmada",
-          imagen: nuevaReserva.imagen || obtenerImagenReserva(nuevaReserva),
+          imagen:
+            nuevaReserva.imagen ||
+            obtenerImagenReserva(nuevaReserva, destinos),
           tipo: "upcoming",
           provisional: nuevaReserva.id == null,
         });
@@ -158,7 +119,7 @@ export default function HistoryPage() {
     }
 
     return { upcomingList: próximas, pastExperiences: pasadas };
-  }, [reservas, nuevaReserva, ahora]);
+  }, [reservas, nuevaReserva, ahora, destinos]);
 
   function verDetalles(item) {
     navigate(`/experiencias/${item.id}`, { state: { reserva: item } });
@@ -224,7 +185,10 @@ export default function HistoryPage() {
                     <article key={item.id} className="upcoming-card">
                       <div className="upcoming-card__header">
                         <img
-                          src={item.imagen || obtenerImagenReserva(item)}
+                          src={
+                            item.imagen ||
+                            obtenerImagenReserva(item, destinos)
+                          }
                           alt={item.nombre || item.experiencia}
                           className="upcoming-card__image"
                           onError={reemplazarImagenRota}
@@ -289,7 +253,10 @@ export default function HistoryPage() {
                   pastExperiences.map((experiencia) => (
                     <ExperienceCard
                       key={experiencia.id}
-                      imagen={experiencia.imagen || obtenerImagenReserva(experiencia)}
+                      imagen={
+                        experiencia.imagen ||
+                        obtenerImagenReserva(experiencia, destinos)
+                      }
                       nombre={experiencia.nombre || experiencia.experiencia}
                       guia={experiencia.guia}
                       ubicacion={experiencia.ubicacion}

@@ -4,12 +4,23 @@ import schedulesRouter from "./routes/schedules.routes.js";
 import guidesRouter from "./routes/guides.routes.js";
 import guardadosRouter from "./routes/guardados.routes.js";
 import reservationsRouter from "./routes/reservations.routes.js";
+import usersRouter from "./routes/users.routes.js";
 import db from "./db.js";
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+function requireUser(req, res, next) {
+  const userId = req.get("X-User-Id")?.trim();
+  if (!userId) {
+    return res.status(401).json({ error: "Debes iniciar sesión." });
+  }
+
+  req.userId = userId;
+  next();
+}
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
@@ -22,14 +33,15 @@ app.use("/api/tours", destinationsRouter);
 app.use("/api/horarios", schedulesRouter);
 
 app.use("/api/guias", guidesRouter);
-app.use("/api/guardados", guardadosRouter);
-app.use("/api/reservas", reservationsRouter);
+app.use("/api/guardados", requireUser, guardadosRouter);
+app.use("/api/reservas", requireUser, reservationsRouter);
+app.use("/api/users", usersRouter);
 
 // Atracciones cercanas desde la tabla destinations en SQLite (Módulo Esther)
 app.get("/api/atracciones-cercanas", (req, res) => {
   const rows = db
     .prepare(
-      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id IN (4, 5, 6, 8) ORDER BY id ASC"
+      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id IN (4, 5, 6, 8) ORDER BY id ASC",
     )
     .all();
   res.json(rows);
@@ -46,7 +58,7 @@ app.get("/api/atracciones-cercanas/:id", (req, res) => {
 
   const atraccion = db
     .prepare(
-      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id = ? AND id IN (4, 5, 6, 8)"
+      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id = ? AND id IN (4, 5, 6, 8)",
     )
     .get(id);
 
@@ -65,6 +77,6 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`API de TourLocal en http://localhost:${PORT}`);
 });
