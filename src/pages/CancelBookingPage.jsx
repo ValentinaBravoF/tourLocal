@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import Button from "../components/Button/Button";
 import { formatTourDate } from "../services/reservationDates";
+import { getUserHeaders } from "../services/userService";
 import "./CancelBookingPage.css";
 
 export default function CancelBookingPage() {
@@ -24,6 +25,7 @@ export default function CancelBookingPage() {
         setReserva(null);
 
         const response = await fetch(`/api/reservas/${id}`, {
+          headers: getUserHeaders(),
           signal: controller.signal,
         });
 
@@ -83,6 +85,7 @@ export default function CancelBookingPage() {
     try {
       const response = await fetch(`/api/reservas/${id}`, {
         method: "DELETE",
+        headers: getUserHeaders(),
       });
       const data = await response.json();
 

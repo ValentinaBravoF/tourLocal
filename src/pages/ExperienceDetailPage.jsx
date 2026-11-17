@@ -8,6 +8,7 @@ import {
   formatTourDate,
   parseTourDateTime,
 } from "../services/reservationDates";
+import { getUserHeaders } from "../services/userService";
 import "./ExperienceDetailPage.css";
 
 export default function ExperienceDetailPage() {
@@ -28,6 +29,7 @@ export default function ExperienceDetailPage() {
 
       try {
         const response = await fetch(`/api/reservas/${id}`, {
+          headers: getUserHeaders(),
           signal: controller.signal,
         });
 

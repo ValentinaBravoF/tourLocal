@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
 import Button from "../components/Button/Button";
 import StatusBadge from "../components/StatusBadge/StatusBadge";
+import useReservas from "../hooks/useReservas";
 import { formatTourDate, parseTourDateTime } from "../services/reservationDates";
 import destinations from "../data/destinations";
 import imagenPredeterminada from "../assets/hero.png";
@@ -41,60 +42,22 @@ export default function HistoryPage() {
   const [activeTab, setActiveTab] = useState(
     location.state?.tab === "past" ? "past" : "upcoming",
   );
-  const [reservas, setReservas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const {
+    reservas: reservasCargadas,
+    loading,
+    error,
+  } = useReservas();
   const [ahora] = useState(() => new Date());
   const nuevaReserva = location.state?.reserva;
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function cargarReservas() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch("/api/reservas", {
-          signal: controller.signal,
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "No se pudieron cargar las reservas.");
-        }
-        if (!Array.isArray(data)) {
-          throw new Error("La API devolvió un historial inválido.");
-        }
-
-        if (!controller.signal.aborted) {
-          setReservas(
-            data.map((reserva) => ({
-              ...reserva,
-              imagen: obtenerImagenReserva(reserva),
-            })),
-          );
-        }
-      } catch (err) {
-        if (!controller.signal.aborted) {
-          setError(
-            err instanceof TypeError || err instanceof SyntaxError
-              ? "No se pudo conectar con la API de reservas. Verifica que esté encendida."
-              : err instanceof Error
-                ? err.message
-                : "No se pudieron cargar las reservas.",
-          );
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    cargarReservas();
-    return () => controller.abort();
-  }, []);
+  const reservas = useMemo(
+    () =>
+      reservasCargadas.map((reserva) => ({
+        ...reserva,
+        imagen: obtenerImagenReserva(reserva),
+      })),
+    [reservasCargadas],
+  );
 
   const { upcomingList, pastExperiences } = useMemo(() => {
     const próximas = [];

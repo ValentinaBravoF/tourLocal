@@ -3,14 +3,18 @@ import { parseTourDateTime } from "../reservation-dates.js";
 
 // GET: Lista todas las reservas (para el historial)
 export function getReservations(req, res) {
-  const rows = db.prepare("SELECT * FROM reservations ORDER BY id DESC").all();
+  const rows = db
+    .prepare("SELECT * FROM reservations WHERE user_id = ? ORDER BY id DESC")
+    .all(req.userId);
   res.json(rows);
 }
 
 // GET por ID (para el detalle o cancelación)
 export function getReservationById(req, res) {
   const { id } = req.params;
-  const reserva = db.prepare("SELECT * FROM reservations WHERE id = ?").get(id);
+  const reserva = db
+    .prepare("SELECT * FROM reservations WHERE id = ? AND user_id = ?")
+    .get(id, req.userId);
 
   if (!reserva) return res.status(404).json({ error: "Reserva no encontrada" });
   res.json(reserva);
@@ -50,10 +54,11 @@ export function createReservation(req, res) {
 
   try {
     const stmt = db.prepare(`
-      INSERT INTO reservations (codigo, experiencia, fecha, horario, participantes, total) 
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO reservations (user_id, codigo, experiencia, fecha, horario, participantes, total)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
+      req.userId,
       codigo,
       experiencia,
       fecha,
@@ -65,6 +70,7 @@ export function createReservation(req, res) {
     // 201 Created: devolver la reserva creada con su ID
     res.status(201).json({
       id: result.lastInsertRowid,
+      user_id: req.userId,
       codigo,
       experiencia,
       fecha,
@@ -83,7 +89,9 @@ export function createReservation(req, res) {
 export function cancelReservation(req, res) {
   const { id } = req.params;
 
-  const reserva = db.prepare("SELECT * FROM reservations WHERE id = ?").get(id);
+  const reserva = db
+    .prepare("SELECT * FROM reservations WHERE id = ? AND user_id = ?")
+    .get(id, req.userId);
 
   if (!reserva) return res.status(404).json({ error: "Reserva no encontrada" });
 
@@ -104,10 +112,9 @@ export function cancelReservation(req, res) {
   }
 
   // Actualizamos el estado en lugar de borrar la fila
-  db.prepare("UPDATE reservations SET estado = ? WHERE id = ?").run(
-    "cancelada",
-    id,
-  );
+  db.prepare(
+    "UPDATE reservations SET estado = ? WHERE id = ? AND user_id = ?",
+  ).run("cancelada", id, req.userId);
 
   res.json({ ...reserva, estado: "cancelada" });
 }

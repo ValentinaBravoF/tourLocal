@@ -5,11 +5,21 @@ import guidesRouter from "./routes/guides.routes.js";
 import guardadosRouter from "./routes/guardados.routes.js";
 import reservationsRouter from "./routes/reservations.routes.js";
 import destinations from "./data/destinations.js";
-
+import usersRouter from "./routes/users.routes.js";
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+function requireUser(req, res, next) {
+  const userId = req.get("X-User-Id")?.trim();
+  if (!userId) {
+    return res.status(401).json({ error: "Debes iniciar sesión." });
+  }
+
+  req.userId = userId;
+  next();
+}
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
@@ -19,8 +29,9 @@ app.use("/api/destinos", destinationsRouter);
 app.use("/api/tours", destinationsRouter);
 app.use("/api/horarios", horariosRouter);
 app.use("/api/guias", guidesRouter);
-app.use("/api/guardados", guardadosRouter);
-app.use("/api/reservas", reservationsRouter);
+app.use("/api/guardados", requireUser, guardadosRouter);
+app.use("/api/reservas", requireUser, reservationsRouter);
+app.use("/api/users", usersRouter);
 
 const idsCercanos = [4, 5, 6, 8];
 const atraccionesCercanas = destinations
@@ -62,6 +73,6 @@ app.use((req, res) => {
   res.status(404).json({ error: "Ruta no encontrada" });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`API de TourLocal en http://localhost:${PORT}`);
 });

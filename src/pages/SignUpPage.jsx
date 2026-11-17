@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import FormField from "../components/FormField/FormField";
 import Button from "../components/Button/Button";
-import { saveUser, setCurrentUser } from "../services/userService"; // Importamos el servicio
+import { setCurrentUser } from "../services/userService";
 import "./LoginPage.css";
 
 const SignUpPage = () => {
@@ -15,7 +15,7 @@ const SignUpPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     if (!nombre || !email || !password) {
@@ -31,24 +31,35 @@ const SignUpPage = () => {
       return;
     }
 
-    // Creamos el objeto del nuevo usuario
-    const newUser = {
-      nombre: nombre,
-      email: email,
-      password: password, // En un caso real, esto iría encriptado
-      telefono: "+591 00000000", // Valor por defecto
-      ciudad: "La Paz, Bolivia", // Valor por defecto
-      fechaRegistro: new Date().toLocaleDateString("es-BO", {
-        month: "long",
-        year: "numeric",
-      }),
-    };
+    try {
+      const response = await fetch("/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre,
+          email,
+          password,
+          telefono: "",
+          ciudad: "La Paz, Bolivia",
+          fechaRegistro: new Date().toLocaleDateString("es-BO", {
+            month: "long",
+            year: "numeric",
+          }),
+        }),
+      });
 
-    saveUser(newUser);
-    setCurrentUser(newUser);
+      const data = await response.json();
 
-    alert("¡Cuenta creada con éxito!");
-    navigate("/app/explorar");
+      if (response.ok) {
+        setCurrentUser(data); // Guardamos la sesión en LocalStorage (esto es solo para saber quién está logueado)
+        alert("¡Cuenta creada con éxito!");
+        navigate("/app/explorar");
+      } else {
+        alert(data.error);
+      }
+    } catch {
+      alert("No se pudo conectar con la API. ¿Está encendida?");
+    }
   };
 
   return (

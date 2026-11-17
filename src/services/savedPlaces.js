@@ -1,7 +1,15 @@
+import { getUserHeaders } from "./userService";
+
 async function requestSavedPlaces(url, options) {
   let response;
   try {
-    response = await fetch(url, options);
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...getUserHeaders(),
+        ...options?.headers,
+      },
+    });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       throw error;

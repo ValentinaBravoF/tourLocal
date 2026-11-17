@@ -3,12 +3,25 @@ const CURRENT_USER_KEY = "tourlocal_currentUser";
 
 export function getUsers() {
   const users = localStorage.getItem(USERS_KEY);
-  return users ? JSON.parse(users) : [];
+  const parsedUsers = users ? JSON.parse(users) : [];
+  let migrated = false;
+  const usersWithIds = parsedUsers.map((user) => {
+    if (user.id) return user;
+
+    migrated = true;
+    return { ...user, id: crypto.randomUUID() };
+  });
+
+  if (migrated) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(usersWithIds));
+  }
+
+  return usersWithIds;
 }
 
 export function saveUser(user) {
   const users = getUsers();
-  users.push(user);
+  users.push({ ...user, id: user.id || crypto.randomUUID() });
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
@@ -17,12 +30,37 @@ export function findUser(email, password) {
 }
 
 export function setCurrentUser(user) {
-  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+  const savedUser = user.id
+    ? null
+    : getUsers().find((item) => item.email === user.email);
+  const currentUser = user.id
+    ? user
+    : savedUser || { ...user, id: crypto.randomUUID() };
+  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
 }
 
 export function getCurrentUser() {
   const user = localStorage.getItem(CURRENT_USER_KEY);
-  return user ? JSON.parse(user) : null;
+  if (!user) return null;
+
+  const parsedUser = JSON.parse(user);
+  if (parsedUser.id) return parsedUser;
+
+  const savedUser = getUsers().find((item) => item.email === parsedUser.email);
+  const currentUser = savedUser
+    ? { ...savedUser, ...parsedUser, id: savedUser.id }
+    : { ...parsedUser, id: parsedUser.id || crypto.randomUUID() };
+
+  if (currentUser.id !== parsedUser.id) {
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+  }
+
+  return currentUser;
+}
+
+export function getUserHeaders() {
+  const userId = getCurrentUser()?.id;
+  return userId ? { "X-User-Id": String(userId) } : {};
 }
 
 export function logout() {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import FormField from "../components/FormField/FormField";
 import Button from "../components/Button/Button";
-import { findUser, setCurrentUser } from "../services/userService"; // Importamos el servicio
+import { setCurrentUser } from "../services/userService";
 import "./LoginPage.css";
 
 const LoginPage = () => {
@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -19,15 +19,24 @@ const LoginPage = () => {
       return;
     }
 
-    // Buscamos al usuario en LocalStorage
-    const user = findUser(email, password);
+    try {
+      const response = await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (user) {
-      setCurrentUser(user); // Iniciamos sesión
-      alert(`¡Bienvenido de vuelta, ${user.nombre}!`);
-      navigate("/app/explorar", { replace: true });
-    } else {
-      alert("Correo o contraseña incorrectos. ¿Ya te registraste?");
+      const data = await response.json();
+
+      if (response.ok) {
+        setCurrentUser(data);
+        alert(`¡Bienvenido de vuelta, ${data.nombre}!`);
+        navigate("/app/explorar", { replace: true });
+      } else {
+        alert(data.error);
+      }
+    } catch {
+      alert("No se pudo conectar con la API. ¿Está encendida?");
     }
   };
 
