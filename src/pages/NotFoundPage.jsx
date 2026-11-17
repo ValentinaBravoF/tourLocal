@@ -1,33 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import CategoryPill from "../components/CategoryPill/CategoryPill";
 import useReservas from "../hooks/useReservas";
 import "./NotificationsPage.css";
 
+const STORAGE_KEY = "tourlocal_notifs_leidas";
+
+function obtenerLeidas() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function getNotifId(r) {
+  return `res-${r.id ?? r.codigo ?? r.experiencia}-${r.estado ?? "confirmada"}`;
+}
+
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("Todas");
   const { reservas } = useReservas();
-  const [notifications, setNotifications] = useState([]);
+  const [readIds, setReadIds] = useState(() => obtenerLeidas());
 
-  useEffect(() => {
-    // 1. Leer del navegador las notificaciones que ya abrimos
-    const leidas = JSON.parse(localStorage.getItem("tourlocal_notifs_leidas") || "[]");
+  const notifications = useMemo(() => {
     const list = [];
 
-    // 2. Generar notificaciones reales de la base de datos
     if (Array.isArray(reservas)) {
-      reservas.forEach((r, idx) => {
-        const notifId = `res-${r.codigo || r.id || idx}`;
+      reservas.forEach((r) => {
+        const notifId = getNotifId(r);
         list.push({
           id: notifId,
-          title: r.estado === "cancelada" ? "Reserva Cancelada" : "¡Reserva Confirmada!",
-          desc: r.estado === "cancelada"
-            ? `Tu reserva para "${r.experiencia}" ha sido cancelada.`
-            : `Tu tour a "${r.experiencia}" está confirmado. Código: ${r.codigo || "TL-" + r.id}`,
+          title:
+            r.estado === "cancelada"
+              ? "Reserva Cancelada"
+              : "¡Reserva Confirmada!",
+          desc:
+            r.estado === "cancelada"
+              ? `Tu reserva para "${r.experiencia}" ha sido cancelada.`
+              : `Tu tour a "${r.experiencia}" está confirmado para el ${r.fecha} a las ${r.horario}.`,
           time: "Reciente",
-          read: leidas.includes(notifId), // Verifica si ya está en la lista de leídas
+          read: readIds.includes(notifId),
           type: "booking",
           link: "/historial",
           state: { tab: r.estado === "cancelada" ? "past" : "upcoming" },
@@ -35,40 +52,64 @@ export default function NotificationsPage() {
       });
     }
 
-    // 3. Notificaciones de sistema (estáticas)
-    list.push({
-      id: "guide-diego",
-      title: "Mensaje de tu guía",
-      desc: "Hola, recuerda llevar calzado cómodo para el recorrido. ¡Nos vemos pronto!",
-      time: "Hace 2 horas",
-      read: leidas.includes("guide-diego"),
-      type: "guide",
-      link: "/guias/1",
+    const fijas = [
+      {
+        id: "guide-diego",
+        title: "Mensaje de tu guía Diego Ramos",
+        desc: "Hola, recuerda llevar calzado cómodo y bloqueador solar para el recorrido.",
+        time: "Hace 2 horas",
+        type: "guide",
+        link: "/guias/1",
+      },
+      {
+        id: "review-brujas",
+        title: "Califica tu experiencia",
+        desc: "¿Qué te pareció el tour por la Calle de las Brujas? ¡Tu opinión ayuda mucho a otros viajeros!",
+        time: "Ayer",
+        type: "review",
+        link: "/experiencias/1/calificar",
+      },
+      {
+        id: "promo-killi",
+        title: "Nuevo destino recomendado",
+        desc: "Conoce el Mirador Killi Killi: vistas panorámicas de 360 grados de toda la ciudad.",
+        time: "Hace 3 días",
+        type: "promo",
+        link: "/lugares/5",
+      },
+    ];
+
+    fijas.forEach((item) => {
+      list.push({
+        ...item,
+        read: readIds.includes(item.id),
+      });
     });
 
-    setNotifications(list);
-  }, [reservas]);
+    return list;
+  }, [reservas, readIds]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Marcar TODAS como leídas
   const markAllAsRead = () => {
-    const allIds = notifications.map((n) => n.id);
-    localStorage.setItem("tourlocal_notifs_leidas", JSON.stringify(allIds));
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setReadIds((prev) => {
+      const nuevos = Array.from(new Set([...prev, ...notifications.map((n) => n.id)]));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevos));
+      window.dispatchEvent(new Event("notifs-actualizadas"));
+      return nuevos;
+    });
   };
 
-  // Marcar UNA como leída al hacerle clic
   const handleNotifClick = (item) => {
-    const leidas = JSON.parse(localStorage.getItem("tourlocal_notifs_leidas") || "[]");
-    if (!leidas.includes(item.id)) {
-      leidas.push(item.id);
-      localStorage.setItem("tourlocal_notifs_leidas", JSON.stringify(leidas));
+    const actual = obtenerLeidas();
+    const nuevos = Array.from(new Set([...actual, item.id]));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevos));
+    setReadIds(nuevos);
+    window.dispatchEvent(new Event("notifs-actualizadas"));
+
+    if (item.link) {
+      navigate(item.link, item.state ? { state: item.state } : undefined);
     }
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
-    );
-    if (item.link) navigate(item.link, item.state ? { state: item.state } : undefined);
   };
 
   const filtered = notifications.filter((n) => {
@@ -78,15 +119,35 @@ export default function NotificationsPage() {
 
   return (
     <div className="notifications-page">
-      <HeaderBar title="Notificaciones" showBackButton={true} onBackClick={() => navigate(-1)} />
+      <HeaderBar
+        title="Notificaciones"
+        showBackButton={true}
+        onBackClick={() => navigate("/explorar")}
+      />
+
       <main className="notifications-page__content">
         <div className="notifications-page__top">
           <div className="notifications-page__filters">
-            <CategoryPill label="Todas" active={filter === "Todas"} onClick={() => setFilter("Todas")} count={notifications.length} />
-            <CategoryPill label="Sin leer" active={filter === "Sin leer"} onClick={() => setFilter("Sin leer")} count={unreadCount} />
+            <CategoryPill
+              label="Todas"
+              active={filter === "Todas"}
+              onClick={() => setFilter("Todas")}
+              count={notifications.length}
+            />
+            <CategoryPill
+              label="Sin leer"
+              active={filter === "Sin leer"}
+              onClick={() => setFilter("Sin leer")}
+              count={unreadCount}
+            />
           </div>
+
           {unreadCount > 0 && (
-            <button type="button" className="notifications-page__mark-all" onClick={markAllAsRead}>
+            <button
+              type="button"
+              className="notifications-page__mark-all"
+              onClick={markAllAsRead}
+            >
               Marcar leídas
             </button>
           )}
@@ -105,6 +166,8 @@ export default function NotificationsPage() {
                 <div className="notif-card__icon-wrap">
                   {item.type === "booking" && "🎟️"}
                   {item.type === "guide" && "💬"}
+                  {item.type === "review" && "⭐"}
+                  {item.type === "promo" && "✨"}
                 </div>
                 <div className="notif-card__body">
                   <div className="notif-card__header">
@@ -113,11 +176,15 @@ export default function NotificationsPage() {
                   </div>
                   <p className="notif-card__desc">{item.desc}</p>
                 </div>
-                {!item.read && <span className="notif-card__dot" aria-label="No leída" />}
+                {!item.read && (
+                  <span className="notif-card__dot" aria-label="No leída" />
+                )}
               </article>
             ))
           ) : (
-            <div className="notifications-page__empty"><p>No tienes notificaciones pendientes.</p></div>
+            <div className="notifications-page__empty">
+              <p>No tienes notificaciones pendientes.</p>
+            </div>
           )}
         </div>
       </main>
