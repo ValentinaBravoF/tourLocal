@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
-import SlotCard from "../components/slotcard/SlotCard";
+import SlotCard from "../components/SlotCard/SlotCard";
 import Button from "../components/Button/Button";
 import { parseTourDateTime } from "../services/reservationDates";
+import useApi from "../hooks/useApi";
 import "./ScheduleVisitPage.css";
 
 function sumarDias(fecha, cantidad) {
@@ -28,9 +29,12 @@ export default function ScheduleVisitPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [ahora] = useState(() => new Date());
-  const [horarios, setHorarios] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // Los horarios se consultan desde SQLite a través del endpoint GET.
+  const { data: horariosData, loading, error: apiError } = useApi("/api/horarios");
+  const horarios = Array.isArray(horariosData) ? horariosData : [];
+  const error = apiError || (!loading && horariosData !== null && !Array.isArray(horariosData)
+    ? "La API devolvió datos de horarios inválidos."
+    : "");
   const [lugar, setLugar] = useState(null);
   const [lugarLoading, setLugarLoading] = useState(true);
   const [lugarError, setLugarError] = useState("");
@@ -116,54 +120,7 @@ export default function ScheduleVisitPage() {
       }
     }
 
-    async function cargarHorarios() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch("/api/horarios", {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          let mensaje = "No se pudieron cargar los horarios.";
-          try {
-            const dataError = await response.json();
-            mensaje = dataError.error || mensaje;
-          } catch {
-            // La respuesta de error puede no contener JSON.
-          }
-          throw new Error(mensaje);
-        }
-
-        const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error("La API devolvió datos de horarios inválidos.");
-        }
-
-        if (!controller.signal.aborted) {
-          setHorarios(data);
-        }
-      } catch (err) {
-        if (!controller.signal.aborted) {
-          setError(
-            err instanceof TypeError || err instanceof SyntaxError
-              ? "No se pudo conectar con la API. Verifica que el backend esté encendido."
-              : err instanceof Error
-                ? err.message
-                : "No se pudieron cargar los horarios.",
-          );
-          setHorarios([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
     cargarLugar();
-    cargarHorarios();
     return () => controller.abort();
   }, [id]);
 

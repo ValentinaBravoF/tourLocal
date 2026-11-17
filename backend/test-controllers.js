@@ -1,4 +1,5 @@
 import { getDestinations, getDestinationById } from './src/controllers/destinations.controller.js';
+import db from './src/db.js';
 
 function mockRes() {
   const res = {
@@ -70,6 +71,18 @@ console.log('\n=== TEST 7: GET /api/destinos/999 (404 - no encontrado) ===');
   const res = mockRes();
   getDestinationById(req, res);
   console.log('Status:', res.statusCode, 'Error:', res.data.error);
+}
+
+console.log('\n=== TEST 8: SELECT * FROM guides (SQLite) ===');
+{
+  const guides = db.prepare('SELECT * FROM guides ORDER BY id ASC').all();
+  console.log('Status: 200, Guides count in SQLite:', guides.length, 'Names:', guides.map(g => g.name));
+}
+
+console.log('\n=== TEST 9: SELECT * FROM guides WHERE id = 1 ===');
+{
+  const guide = db.prepare('SELECT * FROM guides WHERE id = ?').get(1);
+  console.log('Status: 200, Guide 1:', guide?.name, 'Location:', guide?.location);
 }
 
 console.log('\n=== TODOS LOS TESTS PASARON EXITOSAMENTE ===');

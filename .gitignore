@@ -1,3 +1,4 @@
+
 # Logs
 logs
 *.log
@@ -22,5 +23,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-# Base de datos local (se crea sola con npm run dev)
+
+# SQLite - Bases de datos locales
 *.db
+*.db-journal
+*.db-wal
+*.db-shm

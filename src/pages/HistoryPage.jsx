@@ -5,10 +5,15 @@ import ExperienceCard from "../components/ExperienceCard/ExperienceCard";
 import Button from "../components/Button/Button";
 import StatusBadge from "../components/StatusBadge/StatusBadge";
 import useReservas from "../hooks/useReservas";
-import { formatTourDate, parseTourDateTime } from "../services/reservationDates";
-import destinations from "../data/destinations";
+import useApi from "../hooks/useApi";
+import {
+  formatTourDate,
+  parseTourDateTime,
+} from "../services/reservationDates";
 import imagenPredeterminada from "../assets/hero.png";
 import "./HistoryPage.css";
+
+const destinosVacios = [];
 
 function normalizarNombre(nombre) {
   return String(nombre || "")
@@ -18,11 +23,11 @@ function normalizarNombre(nombre) {
     .toLocaleLowerCase("es");
 }
 
-function obtenerImagenReserva(reserva) {
+function obtenerImagenReserva(reserva, destinos) {
   if (reserva.imagen) return reserva.imagen;
 
   const nombre = normalizarNombre(reserva.experiencia || reserva.nombre);
-  const destino = destinations.find(
+  const destino = destinos.find(
     (item) =>
       normalizarNombre(item.title) === nombre ||
       normalizarNombre(item.name) === nombre,
@@ -42,11 +47,9 @@ export default function HistoryPage() {
   const [activeTab, setActiveTab] = useState(
     location.state?.tab === "past" ? "past" : "upcoming",
   );
-  const {
-    reservas: reservasCargadas,
-    loading,
-    error,
-  } = useReservas();
+  const { reservas: reservasCargadas, loading, error } = useReservas();
+  const { data: destinosData } = useApi("/api/destinos");
+  const destinos = Array.isArray(destinosData) ? destinosData : destinosVacios;
   const [ahora] = useState(() => new Date());
   const nuevaReserva = location.state?.reserva;
 
@@ -54,9 +57,9 @@ export default function HistoryPage() {
     () =>
       reservasCargadas.map((reserva) => ({
         ...reserva,
-        imagen: obtenerImagenReserva(reserva),
+        imagen: obtenerImagenReserva(reserva, destinos),
       })),
-    [reservasCargadas],
+    [reservasCargadas, destinos],
   );
 
   const { upcomingList, pastExperiences } = useMemo(() => {
@@ -106,7 +109,9 @@ export default function HistoryPage() {
           horario: nuevaReserva.horario || "Horario por confirmar",
           participantes: nuevaReserva.participantes ?? 2,
           estado: nuevaReserva.estado || "confirmada",
-          imagen: nuevaReserva.imagen || obtenerImagenReserva(nuevaReserva),
+          imagen:
+            nuevaReserva.imagen ||
+            obtenerImagenReserva(nuevaReserva, destinos),
           tipo: "upcoming",
           provisional: nuevaReserva.id == null,
         });
@@ -114,7 +119,7 @@ export default function HistoryPage() {
     }
 
     return { upcomingList: próximas, pastExperiences: pasadas };
-  }, [reservas, nuevaReserva, ahora]);
+  }, [reservas, nuevaReserva, ahora, destinos]);
 
   function verDetalles(item) {
     navigate(`/experiencias/${item.id}`, { state: { reserva: item } });
@@ -180,7 +185,10 @@ export default function HistoryPage() {
                     <article key={item.id} className="upcoming-card">
                       <div className="upcoming-card__header">
                         <img
-                          src={item.imagen || obtenerImagenReserva(item)}
+                          src={
+                            item.imagen ||
+                            obtenerImagenReserva(item, destinos)
+                          }
                           alt={item.nombre || item.experiencia}
                           className="upcoming-card__image"
                           onError={reemplazarImagenRota}
@@ -245,7 +253,10 @@ export default function HistoryPage() {
                   pastExperiences.map((experiencia) => (
                     <ExperienceCard
                       key={experiencia.id}
-                      imagen={experiencia.imagen || obtenerImagenReserva(experiencia)}
+                      imagen={
+                        experiencia.imagen ||
+                        obtenerImagenReserva(experiencia, destinos)
+                      }
                       nombre={experiencia.nombre || experiencia.experiencia}
                       guia={experiencia.guia}
                       ubicacion={experiencia.ubicacion}
