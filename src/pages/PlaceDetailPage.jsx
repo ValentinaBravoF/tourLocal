@@ -16,6 +16,12 @@ export default function PlaceDetailPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+
+    if (!id) {
+      setError("No se especificó un destino.");
+      setLoading(false);
+      return;
+    }
     async function loadPlace() {
       try {
         setLoading(true);
@@ -23,7 +29,7 @@ export default function PlaceDetailPage() {
         const response = await fetch(`/api/destinos/${id}`);
         const data = await response.json();
 
-        if (response.ok) {
+        if (response.ok && data) {
           setPlace(data);
         } else {
           setError(data.error || "Destino no encontrado");
@@ -76,7 +82,7 @@ export default function PlaceDetailPage() {
     ubicacion: "La Paz, Bolivia",
     calificacion: "4.9",
     resenas: "320",
-    foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop",
+    foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop", // Foto de Diego
   };
 
   const GUIDE_ID_BY_NAME = {

@@ -117,12 +117,16 @@ export default function ReservationSuccessPage() {
             Tu guía asignado
           </h2>
           <GuideCard
-            foto="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
-            nombre={reserva.guia || "María Fernández"}
+            foto={
+              reserva.guia === "Carlos Condori"
+                ? "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop"
+                : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
+            }
+            nombre={reserva.guia || "Guía Local"}
             descripcion="Guía local especializada en historia, tradiciones y cultura paceña."
             calificacion="4.9"
             resenas="120"
-            onVerPerfil={() => navigate(`/app/guias/${reserva.guiaId || 1}`)}
+            onVerPerfil={() => navigate(`/guias/${reserva.guiaId || 1}`)}
           />
         </section>
 
