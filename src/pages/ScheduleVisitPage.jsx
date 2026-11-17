@@ -83,7 +83,8 @@ export default function ScheduleVisitPage() {
 
         const guia = guias.find(
           (item) => item.name === lugarData.guide?.nombre,
-        );
+        ) || guias[0];
+        
         if (!guia) {
           throw new Error("No se encontró el guía asignado a este destino.");
         }

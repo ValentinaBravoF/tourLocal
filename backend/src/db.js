@@ -299,6 +299,10 @@ try {
       );
     }
   }
+
+  db.prepare("UPDATE destinations SET image = 'https://www.infodiez.com/wp-content/uploads/2025/11/LaPaz-infodiez.jpg' WHERE id = 1").run();
+  db.prepare("UPDATE destinations SET image = 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1b/32/e5/20/mercado-de-las-brujas.jpg?w=1200&h=-1&s=1' WHERE id = 6").run();
+
 } catch {
   // Ignorar si hay algún problema de sincronización inicial
 }
