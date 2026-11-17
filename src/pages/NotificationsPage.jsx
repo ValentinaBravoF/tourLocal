@@ -1,52 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import CategoryPill from "../components/CategoryPill/CategoryPill";
+import useReservas from "../hooks/useReservas";
 import "./NotificationsPage.css";
-
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 1,
-    title: "¡Reserva Confirmada!",
-    desc: 'Tu tour a Letrero "LA PAZ" ha sido confirmado para el 28 de octubre a las 10:00 AM.',
-    time: "Hace 15 min",
-    read: false,
-    type: "booking",
-    link: "/app/historial",
-  },
-  {
-    id: 2,
-    title: "Mensaje de tu guía Diego",
-    desc: "Hola Sofía, recuerda llevar calzado cómodo y bloqueador solar para el recorrido.",
-    time: "Hace 2 horas",
-    read: false,
-    type: "guide",
-    link: "/app/guias/1",
-  },
-  {
-    id: 3,
-    title: "Califica tu experiencia",
-    desc: "¿Qué te pareció el tour por la Calle de las Brujas con Marcos? ¡Tu opinión ayuda mucho!",
-    time: "Ayer",
-    read: true,
-    type: "review",
-    link: "/app/experiencias/1/calificar",
-  },
-  {
-    id: 4,
-    title: "Nuevo destino recomendado",
-    desc: "Conoce el Mirador Killi Killi: vistas panorámicas de 360 grados de toda la ciudad.",
-    time: "Hace 3 días",
-    read: true,
-    type: "promo",
-    link: "/app/lugares/5",
-  },
-];
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("Todas");
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const { reservas } = useReservas();
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const list = [];
+
+    // Notificaciones sincronizadas con las reservas reales en el historial
+    if (Array.isArray(reservas) && reservas.length > 0) {
+      reservas.forEach((r, idx) => {
+        list.push({
+          id: `res-${r.codigo || r.id || idx}`,
+          title:
+            r.estado === "cancelada"
+              ? "Reserva Cancelada"
+              : "¡Reserva Confirmada!",
+          desc:
+            r.estado === "cancelada"
+              ? `Tu reserva para "${r.experiencia}" ha sido cancelada.`
+              : `Tu tour a "${r.experiencia}" está confirmado para el ${r.fecha} a las ${r.horario}. Código: ${r.codigo || "TL-" + r.id}`,
+          time: "Reciente",
+          read: false,
+          type: "booking",
+          link: "/historial",
+          state: { tab: r.estado === "cancelada" ? "past" : "upcoming" },
+        });
+      });
+    } else {
+      list.push({
+        id: "demo-booking",
+        title: "¡Reserva Confirmada!",
+        desc: 'Tu tour a Letrero "LA PAZ" ha sido confirmado para el 28 de octubre a las 10:00 AM.',
+        time: "Hace 15 min",
+        read: false,
+        type: "booking",
+        link: "/historial",
+        state: { tab: "upcoming" },
+      });
+    }
+
+    list.push(
+      {
+        id: "guide-diego",
+        title: "Mensaje de tu guía Diego Ramos",
+        desc: "Hola, recuerda llevar calzado cómodo y bloqueador solar para el recorrido.",
+        time: "Hace 2 horas",
+        read: false,
+        type: "guide",
+        link: "/guias/1",
+      },
+      {
+        id: "review-brujas",
+        title: "Califica tu experiencia",
+        desc: "¿Qué te pareció el tour por la Calle de las Brujas? ¡Tu opinión ayuda mucho a otros viajeros!",
+        time: "Ayer",
+        read: true,
+        type: "review",
+        link: "/experiencias/1/calificar",
+      },
+      {
+        id: "promo-killi",
+        title: "Nuevo destino recomendado",
+        desc: "Conoce el Mirador Killi Killi: vistas panorámicas de 360 grados de toda la ciudad.",
+        time: "Hace 3 días",
+        read: true,
+        type: "promo",
+        link: "/lugares/5",
+      },
+    );
+
+    setNotifications(list);
+  }, [reservas]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -103,15 +135,15 @@ export default function NotificationsPage() {
                 className={`notif-card ${!item.read ? "notif-card--unread" : ""}`}
                 onClick={() => {
                   setNotifications((prev) =>
-                    prev.map((n) => (n.id === item.id ? { ...n, read: true } : n))
+                    prev.map((n) => (n.id === item.id ? { ...n, read: true } : n)),
                   );
-                  if (item.link) navigate(item.link);
+                  if (item.link) navigate(item.link, item.state ? { state: item.state } : undefined);
                 }}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    if (item.link) navigate(item.link);
+                    if (item.link) navigate(item.link, item.state ? { state: item.state } : undefined);
                   }
                 }}
               >

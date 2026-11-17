@@ -92,7 +92,7 @@ export default function EditProfilePage() {
     lector.readAsDataURL(archivo);
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (procesandoFoto) return;
 
@@ -106,9 +106,9 @@ export default function EditProfilePage() {
     };
 
     try {
-      updateUser(updatedUser);
+      await updateUser(updatedUser);
       alert("Perfil actualizado correctamente");
-      navigate("/app/perfil");
+      navigate("/perfil");
     } catch (error) {
       setErrorFoto(
         error instanceof Error
@@ -183,7 +183,7 @@ export default function EditProfilePage() {
             <Button variant="primary" type="submit" disabled={procesandoFoto}>
               Guardar Cambios
             </Button>
-            <Button variant="secondary" onClick={() => navigate("/app/perfil")}>
+            <Button variant="secondary" onClick={() => navigate("/perfil")}>
               Cancelar
             </Button>
           </div>

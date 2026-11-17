@@ -76,8 +76,16 @@ export default function PlaceDetailPage() {
     ubicacion: "La Paz, Bolivia",
     calificacion: "4.9",
     resenas: "320",
-    foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop",
+    foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop",
   };
+
+  const GUIDE_ID_BY_NAME = {
+    "Diego Ramos": 1,
+    "Carlos Condori": 2,
+    "María Fernández": 3,
+    "Elena Choque": 4,
+  };
+  const guideId = guide.id || GUIDE_ID_BY_NAME[guide.nombre] || 1;
 
   return (
     <div className="place-detail-page">
@@ -135,7 +143,7 @@ export default function PlaceDetailPage() {
             ubicacion={guide.ubicacion}
             calificacion={String(guide.calificacion)}
             resenas={String(guide.resenas)}
-            onVerPerfil={() => navigate("/guias/1")}
+            onVerPerfil={() => navigate(`/guias/${guideId}`)}
           />
         </section>
 

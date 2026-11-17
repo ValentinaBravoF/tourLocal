@@ -31,7 +31,7 @@ const LoginPage = () => {
       if (response.ok) {
         setCurrentUser(data);
         alert(`¡Bienvenido de vuelta, ${data.nombre}!`);
-        navigate("/app/explorar", { replace: true });
+        navigate("/explorar", { replace: true });
       } else {
         alert(data.error);
       }

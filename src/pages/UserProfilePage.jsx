@@ -77,13 +77,13 @@ export default function UserProfilePage() {
         <div className="user-profile-page__actions">
           <Button
             variant="primary"
-            onClick={() => navigate("/app/perfil/editar")}
+            onClick={() => navigate("/perfil/editar")}
           >
             Editar Perfil
           </Button>
           <Button
             variant="secondary"
-            onClick={() => navigate("/app/historial")}
+            onClick={() => navigate("/historial")}
           >
             Ver Historial de Experiencias
           </Button>
