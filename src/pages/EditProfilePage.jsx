@@ -132,7 +132,7 @@ export default function EditProfilePage() {
             <img
               src={
                 foto ||
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
+                "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
               }
               alt={`Foto de perfil de ${nombre || "usuario"}`}
               className="edit-profile-page__avatar"

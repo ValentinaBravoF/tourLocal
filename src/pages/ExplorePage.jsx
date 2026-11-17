@@ -292,7 +292,7 @@ export default function ExplorePage() {
               <img
                 src={
                   usuario?.foto ||
-                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=120&auto=format&fit=crop"
+                  "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
                 }
                 alt={nombreUsuario}
                 className="explore-page__avatar"
