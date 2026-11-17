@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import HeaderBar from "../components/HeaderBar/HeaderBar";
 import GuideCard from "../components/GuideCard/GuideCard";
@@ -21,12 +21,39 @@ export default function ReservationSuccessPage() {
     ubicacion: "Murillo, La Paz, Bolivia",
     notas: "Presentarse 10 minutos antes del recorrido.",
     guia: "María Fernández",
-    guiaId: 1,
+    guiaId: 3,
     metodoPago: "QR Simple",
     totalPagado: 170,
     idReserva: "TL-582914",
     estado: "confirmada",
   };
+
+  // ESTADOS PARA LA BASE DE DATOS
+  const [guiaDb, setGuiaDb] = useState(null);
+  const [destinoDb, setDestinoDb] = useState(null);
+
+  useEffect(() => {
+    async function jalarDatosReales() {
+      try {
+        // 1. Traer datos del guía por su ID
+        if (reserva.guiaId) {
+          const resGuia = await fetch(`/api/guias/${reserva.guiaId}`);
+          if (resGuia.ok) setGuiaDb(await resGuia.json());
+        }
+        // 2. Traer datos del destino para la foto
+        if (reserva.experienciaId) {
+          const resDestino = await fetch(`/api/destinos/${reserva.experienciaId}`);
+          if (resDestino.ok) setDestinoDb(await resDestino.json());
+        }
+      } catch (e) {
+        console.error("Error cargando de BD", e);
+      }
+    }
+    jalarDatosReales();
+  }, [reserva.guiaId, reserva.experienciaId]);
+
+  // Usar imagen de la BD si existe
+  const imagenLugar = destinoDb?.image || reserva.imagen || "https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop";
 
   return (
     <div className="reservation-success-page">
@@ -40,23 +67,12 @@ export default function ReservationSuccessPage() {
         {/* Banner de Éxito */}
         <section className="reservation-success-page__banner">
           <div className="reservation-success-page__icon-wrap">
-            <svg
-              className="reservation-success-page__icon"
-              viewBox="0 0 64 64"
-              fill="none"
-              stroke="var(--color-primary, #0f766e)"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <svg className="reservation-success-page__icon" viewBox="0 0 64 64" fill="none" stroke="var(--color-primary, #0f766e)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="32" cy="32" r="28" />
               <polyline points="20 32 28 40 44 24" />
             </svg>
           </div>
-          <h1 className="reservation-success-page__title">
-            ¡Reserva Confirmada!
-          </h1>
+          <h1 className="reservation-success-page__title">¡Reserva Confirmada!</h1>
           <p className="reservation-success-page__subtitle">
             Tu experiencia ha sido reservada correctamente. Te esperamos con entusiasmo.
           </p>
@@ -67,35 +83,32 @@ export default function ReservationSuccessPage() {
           )}
         </section>
 
-        {/* Resumen de Experiencia */}
+        {/* Resumen de Experiencia DINÁMICO */}
         <section className="reservation-success-page__experience">
           <ExperienceSummary
-            imagen="https://images.unsplash.com/photo-1583535314398-3eb1a23424a9?q=80&w=200&auto=format&fit=crop"
-            destino={reserva.experiencia || 'Letrero "LA PAZ"'}
-            ubicacion={reserva.ubicacion || "Murillo, La Paz, Bolivia"}
-            categoria="PARQUE MIRADOR"
-            calificacion="4.9"
-            resenas="2,481"
+            imagen={imagenLugar}
+            destino={reserva.experiencia}
+            ubicacion={reserva.ubicacion || destinoDb?.location}
+            categoria={destinoDb?.category || reserva.categoria || "EXPERIENCIA"}
+            calificacion={destinoDb?.rating || reserva.calificacion || "4.9"}
+            resenas={destinoDb?.reviews || reserva.resenas || "120"}
+            estado="resumen"
           />
         </section>
 
-        {/* Detalles de la reserva */}
         <section className="reservation-success-page__section">
-          <h2 className="reservation-success-page__section-title">
-            Detalles de la reserva
-          </h2>
+          <h2 className="reservation-success-page__section-title">Detalles de la reserva</h2>
           <ReservationDetailCard
             titulo=""
-            fecha={formatTourDate(reserva.fecha || "28 de octubre de 2026")}
-            horario={reserva.horario || "10:00 AM"}
-            participantes={`${reserva.participantes ?? 2} personas`}
-            ubicacion={reserva.ubicacion || "Murillo, La Paz, Bolivia"}
+            fecha={formatTourDate(reserva.fecha)}
+            horario={reserva.horario}
+            participantes={`${reserva.participantes} personas`}
+            ubicacion={reserva.ubicacion || destinoDb?.location}
             notas={reserva.notas || "-"}
             estado="confirmada"
           />
         </section>
 
-        {/* Pago y Guía */}
         {reserva.metodoPago && (
           <section className="reservation-success-page__payment-info">
             <div className="reservation-success-page__payment-row">
@@ -111,26 +124,23 @@ export default function ReservationSuccessPage() {
           </section>
         )}
 
-        {/* Ver mi reserva / Tu guía */}
+        {/* Guía Asignado DINÁMICO */}
         <section className="reservation-success-page__section">
-          <h2 className="reservation-success-page__section-title">
-            Tu guía asignado
-          </h2>
-          <GuideCard
-            foto={
-              reserva.guia === "Carlos Condori"
-                ? "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop"
-                : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
-            }
-            nombre={reserva.guia || "Guía Local"}
-            descripcion="Guía local especializada en historia, tradiciones y cultura paceña."
-            calificacion="4.9"
-            resenas="120"
-            onVerPerfil={() => navigate(`/guias/${reserva.guiaId || 1}`)}
-          />
+          <h2 className="reservation-success-page__section-title">Tu guía asignado</h2>
+          {guiaDb ? (
+            <GuideCard
+              foto={guiaDb.avatar}
+              nombre={guiaDb.name}
+              descripcion={guiaDb.description}
+              calificacion={String(guiaDb.rating)}
+              resenas={String(guiaDb.reviews)}
+              onVerPerfil={() => navigate(`/app/guias/${guiaDb.id}`)}
+            />
+          ) : (
+            <p>Cargando información del guía...</p>
+          )}
         </section>
 
-        {/* Botones de acción */}
         <div className="reservation-success-page__actions">
           <Button
             variant="primary"
@@ -142,20 +152,16 @@ export default function ReservationSuccessPage() {
           >
             Ver en mis reservas
           </Button>
-
           {reserva.id && (
             <Button
               variant="danger"
               onClick={() =>
-                navigate(`/app/cancelar-reserva/${reserva.id}`, {
-                  state: { reserva },
-                })
+                navigate(`/app/cancelar-reserva/${reserva.id}`, { state: { reserva } })
               }
             >
               Cancelar reserva
             </Button>
           )}
-
           <Button variant="secondary" onClick={() => navigate("/app/explorar")}>
             Volver al inicio
           </Button>
