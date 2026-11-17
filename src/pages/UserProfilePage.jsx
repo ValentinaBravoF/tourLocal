@@ -44,7 +44,7 @@ export default function UserProfilePage() {
           <img
             src={
               user.foto ||
-              "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop"
+              "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
             }
             alt={user.nombre}
             className="user-profile-page__avatar"
