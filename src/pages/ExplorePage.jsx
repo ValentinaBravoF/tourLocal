@@ -1,4 +1,5 @@
 
+import { getNotifId } from "./NotificationsPage";
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar/SearchBar";
@@ -89,9 +90,36 @@ export default function ExplorePage() {
   const nombreUsuario = usuario?.nombre?.trim() || "Viajero";
   const { reservas } = useReservas();
 
-  // Verificamos si hay alguna notificación que el usuario no haya leído
-  const leidas = JSON.parse(localStorage.getItem("tourlocal_notifs_leidas") || "[]");
-  const hayNotifsSinLeer = reservas.some((r, idx) => !leidas.includes(`res-${r.codigo || r.id || idx}`)) || !leidas.includes("guide-diego");
+  const [leidas, setLeidas] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("tourlocal_notifs_leidas") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    const sincronizarLeidas = () => {
+      try {
+        setLeidas(JSON.parse(localStorage.getItem("tourlocal_notifs_leidas") || "[]"));
+      } catch {
+        setLeidas([]);
+      }
+    };
+
+    sincronizarLeidas();
+    window.addEventListener("notifs-actualizadas", sincronizarLeidas);
+    window.addEventListener("focus", sincronizarLeidas);
+    return () => {
+      window.removeEventListener("notifs-actualizadas", sincronizarLeidas);
+      window.removeEventListener("focus", sincronizarLeidas);
+    };
+  }, []);
+
+  const hayNotifsSinLeer =
+    Array.isArray(reservas) &&
+    reservas.length > 0 &&
+    reservas.some((r) => !leidas.includes(getNotifId(r)));
 
   // Estados de interacción
   const [selectedCategory, setSelectedCategory] = useState("Todos");
