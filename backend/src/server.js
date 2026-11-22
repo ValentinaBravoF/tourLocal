@@ -1,3 +1,4 @@
+
 import express from "express";
 import destinationsRouter from "./routes/destinations.routes.js";
 import schedulesRouter from "./routes/schedules.routes.js";
@@ -5,18 +6,53 @@ import guidesRouter from "./routes/guides.routes.js";
 import guardadosRouter from "./routes/guardados.routes.js";
 import reservationsRouter from "./routes/reservations.routes.js";
 import usersRouter from "./routes/users.routes.js";
+import calificacionesRouter from "./routes/calificaciones.routes.js";
 import db from "./db.js";
 
 const app = express();
 const PORT = 3000;
+
+// Permitir conexiones desde la web y Expo web.
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:8081",
+];
+
+app.use((req, res, next) => {
+  const origin = req.get("Origin");
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Vary", "Origin");
+  }
+
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, X-User-Id, Authorization"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 function requireUser(req, res, next) {
   const userId = req.get("X-User-Id")?.trim();
+
   if (!userId) {
-    return res.status(401).json({ error: "Debes iniciar sesión." });
+    return res.status(401).json({
+      error: "Debes iniciar sesión.",
+    });
   }
 
   req.userId = userId;
@@ -30,21 +66,27 @@ app.get("/api/health", (req, res) => {
 app.use("/api/destinos", destinationsRouter);
 app.use("/api/tours", destinationsRouter);
 
-// Horarios desde SQLite
 app.use("/api/horarios", schedulesRouter);
-
 app.use("/api/guias", guidesRouter);
+
 app.use("/api/guardados", requireUser, guardadosRouter);
 app.use("/api/reservas", requireUser, reservationsRouter);
 app.use("/api/users", usersRouter);
 
-// Atracciones cercanas desde la tabla destinations en SQLite (Módulo Esther)
+// Nueva API de calificaciones.
+app.use(
+  "/api/calificaciones",
+  requireUser,
+  calificacionesRouter
+);
+
 app.get("/api/atracciones-cercanas", (req, res) => {
   const rows = db
     .prepare(
-      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id IN (4, 5, 6, 8) ORDER BY id ASC",
+      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id IN (4, 5, 6, 8) ORDER BY id ASC"
     )
     .all();
+
   res.json(rows);
 });
 
@@ -59,7 +101,7 @@ app.get("/api/atracciones-cercanas/:id", (req, res) => {
 
   const atraccion = db
     .prepare(
-      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id = ? AND id IN (4, 5, 6, 8)",
+      "SELECT id, title, description, rating, reviews, category, image FROM destinations WHERE id = ? AND id IN (4, 5, 6, 8)"
     )
     .get(id);
 
