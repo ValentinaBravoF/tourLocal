@@ -10,21 +10,14 @@ import calificacionesRouter from "./routes/calificaciones.routes.js";
 import db from "./db.js";
 
 const app = express();
-const PORT = 3000;
+// En Render el puerto lo asigna el servidor (variable PORT); en tu computadora es 3000
+const PORT = process.env.PORT || 3000;
 
-// Permitir conexiones desde la web y Expo web.
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:8081",
-];
-
+// Permitir conexiones desde la web, Render y dispositivos móviles
 app.use((req, res, next) => {
   const origin = req.get("Origin");
-
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header("Vary", "Origin");
-  }
+  res.header("Access-Control-Allow-Origin", origin || "*");
+  res.header("Vary", "Origin");
 
   res.header(
     "Access-Control-Allow-Methods",
