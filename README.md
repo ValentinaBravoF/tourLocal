@@ -2,6 +2,17 @@
 
 Aplicación web interactiva que conecta turistas con experiencias locales auténticas y guías especializados en la ciudad de La Paz, Bolivia.
 
+## API publicada (Render)
+
+- **Health check:** https://tourlocal-api.onrender.com/api/health
+- **Catálogo de destinos:** https://tourlocal-api.onrender.com/api/destinos
+- **Servidor base:** https://tourlocal-api.onrender.com
+
+> *Nota: Al estar alojado en el plan gratuito de Render, el servicio entra en reposo tras 15 minutos de inactividad. La primera petición puede demorar cerca de 50 segundos mientras se reactiva la instancia.*
+
+## Pruebas funcionales v1.0
+La matriz detallada de los 12 casos de prueba ejecutados se encuentra en [PRUEBAS.md](./PRUEBAS.md).
+
 ## Cómo ejecutar
 
 1. Instalar dependencias del frontend (en la raíz del proyecto):
